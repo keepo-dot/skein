@@ -4,7 +4,7 @@ CFLAGS = `pkg-config --cflags gtk4` -Iinclude
 LIBS = `pkg-config --libs gtk4`
 
 # This variable lists all your source files
-SRCS = main.c src/core/*.c
+SRCS = main.c src/*/*.c
 
 # This variable defines the name of your final program
 TARGET = knitpatc

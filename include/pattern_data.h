@@ -1,17 +1,20 @@
+#include <gtk/gtk.h>
+#include <stdbool.h>
 #ifndef PATTERN_DATA_H
 #define PATTERN_DATA_H
 
 #define STITCH_SIZE 30
 
 typedef struct {
-  int type;     // Type of stitvh, 1 for knit, 2 for purl, etc.
-  int color_id; // color value, preferably hex in the future.
-} Stitch;
+  char stitch_type[4];  // Type of stitch, 4 byte string ie M1L, K, P, SSK, YO.
+  GdkRGBA stitch_color; // color value
+} StitchData;
 
 typedef struct {
-  int width;         // X stitches wide.
-  int height;        // Y rows high.
-  Stitch *grid_data; // What's actually IN the objects in the grid.
+  int width;               // X stitches wide.
+  int height;              // Y rows high.
+  StitchData *stitch_data; // What's actually IN the objects in the grid.
+  bool redraw;
 } PatternData;
 
 #endif

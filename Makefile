@@ -1,6 +1,6 @@
 # 1. Variables (The Ingredients)
 CC = gcc
-CFLAGS = `pkg-config --cflags gtk4` -Iinclude
+CFLAGS = `pkg-config --cflags gtk4` -Iinclude/core -Iinclude/ui
 LIBS = `pkg-config --libs gtk4`
 
 # This variable lists all your source files

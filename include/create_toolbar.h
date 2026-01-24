@@ -4,6 +4,6 @@
 #include "button.h"
 #include <gtk/gtk.h>
 
-GtkWidget *create_toolbar(void);
+GtkWidget *create_toolbar(ToolbarState *state);
 
 #endif

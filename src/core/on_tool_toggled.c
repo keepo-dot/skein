@@ -7,6 +7,8 @@ void on_tool_toggled(GtkToggleButton *button, gpointer user_data) {
     ToolbarMode mode =
         GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "tool-type"));
     state->active_mode = mode;
+    /* DEBUG
     g_print("Current Mode: %d\n", state->active_mode);
+    */
   }
 }

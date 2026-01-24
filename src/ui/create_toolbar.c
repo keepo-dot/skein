@@ -13,7 +13,7 @@ GtkWidget *create_toolbar(ToolbarState *state) {
   toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   ButtonInfo toolbar_buttons[] = {
-      {"Move", "cursor-move-symbolic", NULL, MODE_MOVE},
+      {"Move", "object-move", NULL, MODE_MOVE},
       {"Paint Stitch", "draw-brush-symbolic", NULL, MODE_PAINT},
       {"Erase Stitch", "draw-eraser-symbolic", NULL, MODE_ERASE},
       {"Color Picker", "color-picker-symbolic", NULL, MODE_PICKER}};

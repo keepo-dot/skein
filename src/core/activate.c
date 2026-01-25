@@ -44,7 +44,7 @@ void activate(GtkApplication *app, gpointer user_data) {
   // create the toolbar.
   toolbar = create_toolbar(app_state->ui->toolbar_state);
   // create pattern view.
-  pattern_view = create_pattern_view(grid, draw_grid);
+  pattern_view = create_pattern_view(app_state, draw_grid);
   // create container.
   container = create_app_container(pattern_view, toolbar);
 

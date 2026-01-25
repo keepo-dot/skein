@@ -1,3 +1,4 @@
+#include "app_state.h"
 #include <gtk/gtk.h>
 #ifndef DRAW_GRID_H
 #define DRAW_GRID_H

@@ -50,6 +50,9 @@ GtkWidget *create_toolbar(ToolbarState *state) {
     // so the callback knows which mode this button represents.
     g_object_set_data(G_OBJECT(button), "tool-type",
                       GINT_TO_POINTER(toolbar_buttons_mode[i].button_type));
+    if (state->active_mode == toolbar_buttons_mode[i].button_type) {
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), true);
+    }
     // Add callback function on button toggle.
     g_signal_connect(button, "toggled", G_CALLBACK(on_tool_toggled), state);
     state->tool_buttons[toolbar_buttons_mode[i].button_type] = button;

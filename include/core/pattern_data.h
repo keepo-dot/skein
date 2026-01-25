@@ -14,9 +14,11 @@ typedef struct {
   int width;               // X stitches wide.
   int height;              // Y rows high.
   StitchData *stitch_data; // What's actually IN the objects in the grid.
-  bool redraw;
-  GtkAdjustment *h_adjustment;
-  GtkAdjustment *v_adjustment;
+  bool redraw;             // if grid needs redrawn.
+  double camera_x;         // viewport x position.
+  double camera_y;         // viewport y position.
+  double drag_start_x;     // drag event start x pos.
+  double drag_start_y;     // drag event start y pos.
 } PatternData;
 
 #endif

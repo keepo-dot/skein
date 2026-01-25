@@ -8,5 +8,6 @@ typedef struct {
   const char *icon_name;
   void (*action)(GtkWidget *, gpointer);
   ToolbarMode button_type;
+  const GdkRGBA *button_color;
 } ButtonInfo;
 #endif

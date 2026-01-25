@@ -9,11 +9,13 @@ typedef enum {
   MODE_PAINT,
   MODE_ERASE,
   MODE_PICKER,
+  MODE_COLOR,
   NUM_TOOLS,
 } ToolbarMode;
 
 typedef struct {
   GtkWidget *tool_buttons[4];
+  GtkWidget *color_buttons[7];
   ToolbarMode active_mode;
   GdkRGBA active_color;
   StitchData active_stitch;

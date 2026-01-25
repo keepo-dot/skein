@@ -6,8 +6,8 @@
 #define STITCH_SIZE 30
 
 typedef struct {
-  char stitch_type[4];  // Type of stitch, 4 byte string ie M1L, K, P, SSK, YO.
-  GdkRGBA stitch_color; // color value
+  char stitch_type[4]; // Type of stitch, 4 byte string ie M1L, K, P, SSK, YO.
+  const GdkRGBA *stitch_color; // color value
 } StitchData;
 
 typedef struct {

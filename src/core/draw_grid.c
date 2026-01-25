@@ -14,7 +14,7 @@ void draw_grid(GtkDrawingArea *area, cairo_t *cr, int width, int height,
       double pixel_y = i * STITCH_SIZE; // height
       int index = (i * grid->width) + j;
 
-      gdk_cairo_set_source_rgba(cr, &grid->stitch_data[index].stitch_color);
+      gdk_cairo_set_source_rgba(cr, grid->stitch_data[index].stitch_color);
 
       cairo_rectangle(cr, pixel_x, pixel_y, STITCH_SIZE,
                       STITCH_SIZE); // rect to draw

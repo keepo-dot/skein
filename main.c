@@ -1,5 +1,6 @@
 #include "activate.h"
 #include "app_state.h"
+#include "colors.h"
 #include "glib.h"
 #include "pattern_data.h"
 #include "toolbar_state.h"
@@ -16,8 +17,8 @@ int main(int argc, char *argv[]) {
   // Setup grid.
   PatternData grid;
 
-  grid.width = 50;
-  grid.height = 50;
+  grid.width = 1000;
+  grid.height = 1000;
 
   // Allocate memory for AppState.
   master_state = calloc(1, sizeof(AppState));
@@ -51,10 +52,7 @@ int main(int argc, char *argv[]) {
 
   // paint all stitches to empty white.
   for (int i = 0; i < (grid.width * grid.height); i++) {
-    grid.stitch_data[i].stitch_color.red = 1.0;
-    grid.stitch_data[i].stitch_color.green = 1.0;
-    grid.stitch_data[i].stitch_color.blue = 1.0;
-    grid.stitch_data[i].stitch_color.alpha = 1.0;
+    grid.stitch_data[i].stitch_color = &COLOR_WHITE;
   }
   /* DEBUG
   g_print("Set stitch color to:\n R: %f\n G: %f\n B: %f\n",
@@ -62,6 +60,18 @@ int main(int argc, char *argv[]) {
           grid.stitch_data[0].stitch_color.green,
           grid.stitch_data[0].stitch_color.blue);
 */
+  // Calculate the total number of stitches
+  size_t n_stitches = (size_t)grid.width * grid.height;
+
+  // Calculate Total Bytes:
+  // The compiler automatically uses the smaller size (16 bytes) for
+  // sizeof(StitchData)
+  double total_bytes =
+      sizeof(PatternData) + (double)(n_stitches * sizeof(StitchData) +
+                                     (double)n_stitches * sizeof(StitchData *));
+
+  // Convert to MB
+  g_print("New Setup Memory: %.2f MB\n", total_bytes / 1048576.0);
   // Draw window.
   app =
       gtk_application_new("com.github.keepo_dot", G_APPLICATION_DEFAULT_FLAGS);

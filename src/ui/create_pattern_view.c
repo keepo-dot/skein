@@ -23,16 +23,24 @@ GtkWidget *create_pattern_view(PatternData *grid,
 
   scrollable_window = gtk_scrolled_window_new();
   area = gtk_drawing_area_new();
+  gtk_widget_set_hexpand(area, true);
+  gtk_widget_set_vexpand(area, true);
+  /* int win_height = gtk_widget_get_width(area);
+  int win_width = gtk_widget_get_width(area);*/
   grid->redraw = true;
   gtk_widget_add_tick_callback(
       area, needs_redraw, grid,
       NULL); // adds callback to check if the pattern has changed.
              // makes sure the fps doesn't go zoooooom.
-  gtk_drawing_area_set_content_width(GTK_DRAWING_AREA(area),
-                                     grid->width * STITCH_SIZE);
-  gtk_drawing_area_set_content_height(GTK_DRAWING_AREA(area),
-                                      grid->height * STITCH_SIZE);
+  /* gtk_drawing_area_set_content_width(GTK_DRAWING_AREA(area), win_width);
+  gtk_drawing_area_set_content_height(GTK_DRAWING_AREA(area), win_height); */
   gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(area), draw_func, grid, NULL);
+  grid->h_adjustment = gtk_scrolled_window_get_hadjustment(
+      GTK_SCROLLED_WINDOW(scrollable_window));
+  gtk_adjustment_set_upper(grid->h_adjustment, 1000.0);
+  grid->v_adjustment = gtk_scrolled_window_get_vadjustment(
+      GTK_SCROLLED_WINDOW(scrollable_window));
+  gtk_adjustment_set_upper(grid->v_adjustment, 1000.0);
 
   gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrollable_window), area);
   gtk_widget_set_vexpand(scrollable_window, TRUE);

@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
 
   // paint all stitches to empty white.
   for (int i = 0; i < (grid.width * grid.height); i++) {
-    grid.stitch_data[i].stitch_color = &COLOR_WHITE;
+    grid.stitch_data[i].stitch_color = COLOR_WHITE;
   }
   /* DEBUG
   g_print("Set stitch color to:\n R: %f\n G: %f\n B: %f\n",

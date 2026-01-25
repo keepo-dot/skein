@@ -6,8 +6,8 @@
 #define STITCH_SIZE 30
 
 typedef struct {
-  char stitch_type[4]; // Type of stitch, 4 byte string ie M1L, K, P, SSK, YO.
-  const GdkRGBA *stitch_color; // color value
+  char stitch_type[8];  // Type of stitch, 4 byte string ie M1L, K, P, SSK, YO.
+  GdkRGBA stitch_color; // color value
 } StitchData;
 
 typedef struct {
@@ -15,6 +15,8 @@ typedef struct {
   int height;              // Y rows high.
   StitchData *stitch_data; // What's actually IN the objects in the grid.
   bool redraw;
+  GtkAdjustment *h_adjustment;
+  GtkAdjustment *v_adjustment;
 } PatternData;
 
 #endif

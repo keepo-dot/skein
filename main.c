@@ -67,8 +67,7 @@ int main(int argc, char *argv[]) {
   // The compiler automatically uses the smaller size (16 bytes) for
   // sizeof(StitchData)
   double total_bytes =
-      sizeof(PatternData) + (double)(n_stitches * sizeof(StitchData) +
-                                     (double)n_stitches * sizeof(StitchData *));
+      sizeof(PatternData) + (double)(n_stitches * sizeof(StitchData));
 
   // Convert to MB
   g_print("New Setup Memory: %.2f MB\n", total_bytes / 1048576.0);

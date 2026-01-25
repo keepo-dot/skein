@@ -84,6 +84,6 @@ GtkWidget *create_toolbar(ToolbarState *state) {
     gtk_box_append(GTK_BOX(toolbar), button);
   }
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(leader_button_color), TRUE);
+  // gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(leader_button_color), TRUE);
   return toolbar;
 }

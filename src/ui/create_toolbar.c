@@ -83,7 +83,5 @@ GtkWidget *create_toolbar(ToolbarState *state) {
     // g_print("DEBUG: Button %d saved to state\n", i);
     gtk_box_append(GTK_BOX(toolbar), button);
   }
-
-  // gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(leader_button_color), TRUE);
   return toolbar;
 }

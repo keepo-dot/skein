@@ -31,5 +31,18 @@ void on_drag_begin(GtkGestureDrag *gesture, double start_x, double start_y,
       grid_data->stitch_data[index].stitch_color = toolbar_state->active_color;
       gtk_widget_queue_draw(area);
     }
+  } else if (toolbar_state && toolbar_state->active_mode == MODE_STITCH) {
+    grid_data->mouse_start_x = start_x;
+    grid_data->mouse_start_y = start_y;
+
+    int column = (int)((start_x + grid_data->camera_x) / STITCH_SIZE);
+    int row = (int)((start_y + grid_data->camera_y) / STITCH_SIZE);
+
+    if ((column >= 0 && column < grid_data->width) &&
+        (row >= 0 && row < grid_data->height)) {
+      int index = (row * grid_data->width) + column;
+      grid_data->stitch_data[index].stitch_type = toolbar_state->active_stitch;
+      gtk_widget_queue_draw(area);
+    }
   }
 }

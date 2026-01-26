@@ -2,6 +2,7 @@
 #include "colors.h"
 #include "draw_color_swatch.h"
 #include "draw_stitch_swatch.h"
+#include "draw_toolbar_icon.h"
 #include <gtk/gtk.h>
 #include <stdalign.h>
 #include <stdio.h>
@@ -24,7 +25,7 @@ GtkWidget *create_button(ButtonInfo *info) {
   } else if (info->stitch_type != 0) {
     GtkWidget *button_draw_area = gtk_drawing_area_new();
     gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(button_draw_area),
-                                   draw_stitch_swatch,
+                                   draw_toolbar_icon,
                                    (gpointer)info->stitch_type, NULL);
     gtk_button_set_child(GTK_BUTTON(button), button_draw_area);
     gtk_widget_set_size_request(button_draw_area, 16, 16);

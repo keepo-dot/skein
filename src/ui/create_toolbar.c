@@ -26,7 +26,7 @@ GtkWidget *create_toolbar(ToolbarState *state) {
       {"Paint Stitch", "draw-brush-symbolic", STITCH_EMPTY, MODE_PAINT},
       {"Erase Stitch", "draw-eraser-symbolic", STITCH_EMPTY, MODE_ERASE},
       {"Color Picker", "color-picker-symbolic", STITCH_EMPTY, MODE_PICKER},
-      {"Stitch Type", NULL, STITCH_EMPTY, MODE_STITCH}};
+      {"Stitch Type", "view-grid-symbolic", STITCH_EMPTY, MODE_STITCH}};
 
   ButtonInfo toolbar_buttons_color[] = {
       {"Red", NULL, STITCH_EMPTY, MODE_COLOR, &COLOR_RED},

@@ -12,4 +12,5 @@ extern const GdkRGBA COLOR_BLUE;
 extern const GdkRGBA COLOR_INDIGO;
 extern const GdkRGBA COLOR_VIOLET;
 extern const GdkRGBA COLOR_WHITE;
+extern const GdkRGBA COLOR_BLACK;
 #endif // !EXTERN_CONST_COLORS

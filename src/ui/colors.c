@@ -9,3 +9,4 @@ const GdkRGBA COLOR_BLUE = {0.0, 0.0, 1.0, 1.0};
 const GdkRGBA COLOR_INDIGO = {0.29, 0.0, 0.51, 1.0};
 const GdkRGBA COLOR_VIOLET = {0.93, 0.51, 0.93, 1.0};
 const GdkRGBA COLOR_WHITE = {1.0, 1.0, 1.0, 1.0};
+const GdkRGBA COLOR_BLACK = {0.0, 0.0, 0.0, 1.0};

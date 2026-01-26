@@ -5,8 +5,6 @@ void draw_stitch_swatch(GtkDrawingArea *area, cairo_t *cr, int w, int h,
                         gpointer user_data) {
   int stitch_type = GPOINTER_TO_INT(user_data);
 
-  // Set standard drawing style (Black lines)
-  cairo_set_source_rgb(cr, 0, 0, 0);
   cairo_set_line_width(cr, 2.0);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 

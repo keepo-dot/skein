@@ -56,5 +56,5 @@ dkms.conf
 
 
 # compiled files
-knitpatc
+skein
 compile_flags.txt

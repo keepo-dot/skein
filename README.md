@@ -80,6 +80,7 @@ The application follows a pragmatic C-style Model-View-Controller pattern:
 * **Tool Implementation:**
   * Eraser tool (remove properties from cells).
   * Color Picker tool (sample properties from grid).
+* 
 * **Startup Flow:** Welcome screen to create new patterns or load existing files on launch.
 * **Keyboard Shortcuts:** (Spacebar to pan, hotkeys for tools).
 * File I/O (Save/Load functionality).
@@ -87,6 +88,8 @@ The application follows a pragmatic C-style Model-View-Controller pattern:
 * Adjustable grid dimensions.
 * Undo/Redo stack.
 * Bundle OSS icon theme.
+* **Platform Support:**
+    * Windows Release (likely via MSYS2 or cross-compilation).
 
 ## License
 

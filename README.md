@@ -7,7 +7,7 @@ A native Linux desktop application for creating and editing knitting patterns. B
 * **Vector-Based Rendering:** Patterns are rendered using Cairo for crisp scaling at any zoom level.
 * **Dual-Layer Editing:** Support for distinct "Yarn Color" (background) and "Stitch Type" (foreground symbol) layers.
 * **Dynamic Contrast:** Stitch symbols automatically adjust between black and white based on the luminance of the underlying yarn color.
-* **Navigation:** Pan and zoom support for navigating large pattern grids (currently defaulted to 1000x1000).
+* **Navigation:** Pan and zoom support for navigating large pattern grids (defaulted to 450x600).
 * **Tools & Modes:**
   * **Move:** Pan the camera view.
   * **Paint:** Apply yarn colors to the grid.
@@ -15,81 +15,74 @@ A native Linux desktop application for creating and editing knitting patterns. B
 
 ## Dependencies
 
-To build this project, you will need a C compiler, Make, and the GTK4 development libraries.
+To build this project, you will need a C compiler (Clang/GCC), Make, and the GTK4 development libraries.
 
 * **GTK4**
 * **GLib**
 * **Cairo**
 * **Make**
 
-On Arch Linux:
-
-```bash
-sudo pacman -S gtk4 base-devel
-git clone http://www.github.com/keepo-dot/skein
-cd skein
+### Installation (Arch Linux)
+```
+    sudo pacman -S gtk4 base-devel
+    git clone https://github.com/keepo-dot/skein
+    cd skein
 ```
 
-On Debian/Ubuntu:
-
-```bash
-sudo apt install libgtk-4-dev build-essential
-git clone http://www.github.com/keepo-dot/skein
-cd skein
+### Installation (Debian/Ubuntu)
 ```
-
+    sudo apt install libgtk-4-dev build-essential
+    git clone https://github.com/keepo-dot/skein
+    cd skein
+```
 ## Building
 
-A `Makefile` is included for easy compilation. Simply run:
-
-```bash
-make
+The project uses a modular build system. To compile:
 ```
-
-To clean up build artifacts:
-
-```bash
-make clean
+    make
+```
+To clean up object files and binaries:
+```
+    make clean
 ```
 
 ## Usage
 
 1. **Launch the application:**
-
-    ```bash
-    ./skein
-    ```
-
-2. **Navigation:** Select the **Move** tool to click and drag the canvas.
-3. **Painting:** Select the **Paint** tool and choose a color from the palette to draw colorwork.
-4. **Symbols:** Select the **Stitch** tool (Grid icon) to overlay technical symbols. The palette will automatically switch to show available stitch types.
+```
+./bin/skein
+```
+1. **Navigation:** Select the 'Move' tool to click and drag the canvas.
+2. **Painting:** Select the 'Paint' tool and choose a color from the palette to draw colorwork.
+3. **Symbols:** Select the 'Stitch' tool (Grid icon) to overlay technical symbols. The palette will automatically switch to show available stitch types.
 
 ## Architecture
 
-The application follows a pragmatic C-style Model-View-Controller pattern:
+Skein utilizes a pragmatic, modular C architecture designed for high performance and low header overhead:
 
-* **AppState:** The central source of truth, holding pointers to the Pattern Data and UI State.
-* **PatternData:** A flat array of `StitchData` structs representing the grid. This allows for O(1) access times regardless of grid size.
-* **Rendering:**
-  * `draw_grid`: Handles the viewport, culling, and background color rendering.
-  * `draw_stitch_swatch`: A geometry-only helper that renders stitch symbols. It is decoupled from color logic to support reusability in toolbar icons.
-* **Event Handling:** Input is processed via GTK Gesture controllers (`GtkGestureClick`, `GtkGestureDrag`) which modify the state and queue redraws.
+* **include/types.h**: The central source of truth, containing all structs (AppState, StitchData) and enums.
+* **src/skein.c**: Application entry point; handles GtkApplication lifecycle and state initialization.
+* **src/canvas.c**: High-performance grid rendering. Implements viewport culling to ensure smooth interaction on 1,000,000-cell grids.
+* **src/toolbar.c**: Dynamic UI generation for the tool sidebar, color swatches, and stitch selection.
+* **src/skein_window.c**: Manages the main window shell and layout packing.
+* **src/utils.c**: Shared utilities, including the global yarn color palette and button factory logic.
 
 ## Roadmap
 
 * **Tool Implementation:**
   * Eraser tool (remove properties from cells).
   * Color Picker tool (sample properties from grid).
-* 
-* **Startup Flow:** Welcome screen to create new patterns or load existing files on launch.
-* **Keyboard Shortcuts:** (Spacebar to pan, hotkeys for tools).
-* File I/O (Save/Load functionality).
-* Export to PDF/Image.
-* Adjustable grid dimensions.
-* Undo/Redo stack.
-* Bundle OSS icon theme.
+* **Core Functionality:**
+  * File I/O (Save/Load functionality).
+  * Export to PDF/Image.
+  * Adjustable grid dimensions.
+  * Undo/Redo stack.
+* **UI/UX:**
+  * Welcome screen for pattern creation/loading.
+  * Keyboard shortcuts (Spacebar to pan, Alt+S for Stitch Type, etc).
+  * Bundled OSS icon theme.
 * **Platform Support:**
-    * Windows Release (likely via MSYS2 or cross-compilation).
+  * Windows Release (likely via MSYS2).
 
 ## License
 

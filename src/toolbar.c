@@ -1,15 +1,49 @@
-#include "button.h"
-#include "colors.h"
-#include "create_button.h"
-#include "glib-object.h"
-#include "glibconfig.h"
-#include "gtk/gtkshortcut.h"
-#include "on_color_toggled.h"
-#include "on_stitch_toggled.h"
-#include "on_tool_toggled.h"
-#include "toolbar_state.h"
+#include "types.h"
+#include "utils.h"
 #include <gtk/gtk.h>
-#include <stdalign.h>
+#include <stddef.h>
+#include <stdio.h>
+
+void on_stitch_toggled(GtkToggleButton *button, gpointer toolbar_state) {
+  ToolbarState *state = (ToolbarState *)toolbar_state;
+  if (gtk_toggle_button_get_active(button)) {
+    StitchType *stitch = g_object_get_data(G_OBJECT(button), "stitch-type");
+    state->active_stitch = GPOINTER_TO_INT(stitch);
+  }
+}
+
+static void on_color_toggled(GtkToggleButton *button, gpointer toolbar_state) {
+  ToolbarState *state = (ToolbarState *)toolbar_state;
+  if (gtk_toggle_button_get_active(button)) {
+    GdkRGBA *color = g_object_get_data(G_OBJECT(button), "button-color");
+    state->active_color = *color;
+  }
+}
+
+static void on_tool_toggled(GtkToggleButton *button, gpointer toolbar_state) {
+  ToolbarState *state = (ToolbarState *)toolbar_state;
+  if (gtk_toggle_button_get_active(button)) {
+    ToolbarMode mode =
+        GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "tool-type"));
+    state->active_mode = mode;
+    switch (state->active_mode) {
+    case MODE_PAINT:
+      gtk_widget_set_visible(state->palette_container, true);
+      gtk_widget_set_visible(state->stitch_type_container, false);
+      break;
+
+    case MODE_STITCH:
+      gtk_widget_set_visible(state->stitch_type_container, true);
+      gtk_widget_set_visible(state->palette_container, false);
+      break;
+    case MODE_ERASE:
+    case MODE_PICKER:
+    default:
+      gtk_widget_set_visible(state->palette_container, false);
+      gtk_widget_set_visible(state->stitch_type_container, false);
+    }
+  }
+}
 
 GtkWidget *create_toolbar(ToolbarState *state) {
   GtkWidget *toolbar;
@@ -22,11 +56,12 @@ GtkWidget *create_toolbar(ToolbarState *state) {
   stitch_type_container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   ButtonInfo toolbar_buttons_mode[] = {
-      {"Move", "object-move", STITCH_EMPTY, MODE_MOVE},
-      {"Paint Stitch", "draw-brush-symbolic", STITCH_EMPTY, MODE_PAINT},
-      {"Erase Stitch", "draw-eraser-symbolic", STITCH_EMPTY, MODE_ERASE},
-      {"Color Picker", "color-picker-symbolic", STITCH_EMPTY, MODE_PICKER},
-      {"Stitch Type", "view-grid-symbolic", STITCH_EMPTY, MODE_STITCH}};
+      {"Move", "object-move", STITCH_EMPTY, MODE_MOVE, NULL},
+      {"Paint Stitch", "draw-brush-symbolic", STITCH_EMPTY, MODE_PAINT, NULL},
+      {"Erase Stitch", "draw-eraser-symbolic", STITCH_EMPTY, MODE_ERASE, NULL},
+      {"Color Picker", "color-picker-symbolic", STITCH_EMPTY, MODE_PICKER,
+       NULL},
+      {"Stitch Type", "view-grid-symbolic", STITCH_EMPTY, MODE_STITCH, NULL}};
 
   ButtonInfo toolbar_buttons_color[] = {
       {"Red", NULL, STITCH_EMPTY, MODE_COLOR, &COLOR_RED},
@@ -46,7 +81,7 @@ GtkWidget *create_toolbar(ToolbarState *state) {
 
   GtkWidget *leader_button_mode = NULL;
   // Create tool buttons.
-  for (int i = 0; i < G_N_ELEMENTS(toolbar_buttons_mode); i++) {
+  for (size_t i = 0; i < G_N_ELEMENTS(toolbar_buttons_mode); i++) {
     // g_print("DEBUG: Creating button %d (Type: %d)\n", i,
     //         toolbar_buttons[i].button_type);
 
@@ -59,7 +94,7 @@ GtkWidget *create_toolbar(ToolbarState *state) {
     }
 
     if (button == NULL) {
-      g_print("Error: mode_button %d is NULL\n", i);
+      g_print("Error: mode_button %d is NULL\n", (int)i);
     }
     // Attach the specific tool mode (Move, Paint, etc.) to the button
     // so the callback knows which mode this button represents.
@@ -78,7 +113,7 @@ GtkWidget *create_toolbar(ToolbarState *state) {
   gtk_box_append(GTK_BOX(toolbar), gtk_separator_new(GTK_ORIENTATION_VERTICAL));
   GtkWidget *leader_button_color = NULL;
   // Creates color buttons.
-  for (int i = 0; i < G_N_ELEMENTS(toolbar_buttons_color); i++) {
+  for (size_t i = 0; i < G_N_ELEMENTS(toolbar_buttons_color); i++) {
     GtkWidget *button = create_button(&toolbar_buttons_color[i]);
     if (i == 0) {
       leader_button_color = button;
@@ -88,7 +123,7 @@ GtkWidget *create_toolbar(ToolbarState *state) {
     }
 
     if (button == NULL) {
-      g_print("Error: color_button %d is NULL\n", i);
+      g_print("Error: color_button %d is NULL\n", (int)i);
     }
     // Attach the specific color to the button
     // so the callback knows which mode this button represents.
@@ -104,7 +139,7 @@ GtkWidget *create_toolbar(ToolbarState *state) {
   gtk_box_append(GTK_BOX(toolbar), palette_container);
   // create stitch type buttons.
   GtkWidget *leader_button_stitch = NULL;
-  for (int i = 0; i < G_N_ELEMENTS(toolbar_buttons_stitch_type); i++) {
+  for (size_t i = 0; i < G_N_ELEMENTS(toolbar_buttons_stitch_type); i++) {
     GtkWidget *button = create_button(&toolbar_buttons_stitch_type[i]);
     if (i == 0) {
       leader_button_stitch = button;
@@ -113,7 +148,7 @@ GtkWidget *create_toolbar(ToolbarState *state) {
                                   GTK_TOGGLE_BUTTON(leader_button_stitch));
     }
     if (button == NULL) {
-      g_print("Error: stitch_button %d is NULL\n", i);
+      g_print("Error: stitch_button %d is NULL\n", (int)i);
     }
     g_object_set_data(G_OBJECT(button), "stitch-type",
                       (gpointer)toolbar_buttons_stitch_type[i].stitch_type);

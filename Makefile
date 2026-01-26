@@ -1,21 +1,44 @@
-# 1. Variables (The Ingredients)
-CC = gcc
-CFLAGS = `pkg-config --cflags gtk4` -Iinclude/core -Iinclude/ui
-LIBS = `pkg-config --libs gtk4`
+# Compiler and Flags
+CC = clang
+# -Iinclude tells the compiler to look in your include folder for .h files
+CFLAGS = -Wall -Wextra -g $(shell pkg-config --cflags gtk4) -Iinclude
+LIBS = $(shell pkg-config --libs gtk4)
 
-# This variable lists all your source files
-SRCS = main.c src/*/*.c
+# Directory Setup
+SRC_DIR = src
+OBJ_DIR = obj
+BIN_DIR = bin
 
-# This variable defines the name of your final program
-TARGET = knitpatc
+# The 5 core source files we mashed together
+SRCS = $(SRC_DIR)/skein.c \
+       $(SRC_DIR)/canvas.c \
+       $(SRC_DIR)/toolbar.c \
+       $(SRC_DIR)/skein_window.c \
+       $(SRC_DIR)/utils.c
 
-# 2. Rules (The Recipes)
-# The first rule is what happens when you just type 'make'
+# Automatically turn .c paths into .o paths in the obj/ folder
+OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+
+# The final executable name
+TARGET = $(BIN_DIR)/skein
+
+# --- Rules ---
+
+# Default rule
 all: $(TARGET)
 
-$(TARGET): $(SRCS)
-	$(CC) $(CFLAGS) $(SRCS) -o $(TARGET) $(LIBS)
+# Link the object files into the final binary
+$(TARGET): $(OBJS)
+	@mkdir -p $(BIN_DIR)
+	$(CC) $(OBJS) -o $(TARGET) $(LIBS)
 
-# A 'clean' rule helps you start fresh by deleting the executable
+# Compile each .c file into a .o file
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Clean up the mess
 clean:
-	rm -f $(TARGET)
+	rm -rf $(OBJ_DIR) $(BIN_DIR)
+
+.PHONY: all clean

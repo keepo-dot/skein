@@ -14,15 +14,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-#include "activate.h"
-#include "app_state.h"
-#include "colors.h"
-#include "glib.h"
-#include "pattern_data.h"
-#include "toolbar_state.h"
-#include "ui_state.h"
+#include "canvas.h"
+#include "skein_window.h"
+#include "toolbar.h"
+#include "types.h"
+#include "utils.h"
 #include <gtk/gtk.h>
+
+static void activate(GtkApplication *app, gpointer user_data) {
+  GtkWidget *main_window;
+  GtkWidget *pattern_view;
+  PatternData *grid;
+  GtkWidget *container;
+  GtkWidget *toolbar;
+  AppState *app_state;
+
+  // give activate the master state.
+  app_state = (AppState *)user_data;
+  grid = app_state->pattern;
+  // create the toolbar.
+  toolbar = create_toolbar(app_state->ui->toolbar_state);
+  // create pattern view.
+  pattern_view = create_pattern_view(app_state);
+  // create container.
+  container = create_app_container(pattern_view, toolbar);
+
+  // create main window.
+  main_window = create_main_window(app, container);
+
+  g_print("Pattern loaded: %d x %d\n", grid->width, grid->height);
+  gtk_window_present(GTK_WINDOW(main_window));
+}
 
 int main(int argc, char *argv[]) {
   GtkApplication *app;
@@ -34,8 +56,8 @@ int main(int argc, char *argv[]) {
   // Setup grid.
   PatternData grid;
 
-  grid.width = 1000;
-  grid.height = 1000;
+  grid.width = 450;
+  grid.height = 600;
 
   // Allocate memory for AppState.
   master_state = calloc(1, sizeof(AppState));
@@ -89,8 +111,8 @@ int main(int argc, char *argv[]) {
   // Convert to MB
   g_print("New Setup Memory: %.2f MB\n", total_bytes / 1048576.0);
   // Draw window.
-  app =
-      gtk_application_new("com.github.keepo_dot", G_APPLICATION_DEFAULT_FLAGS);
+  app = gtk_application_new("com.github.keepo-dot.skein",
+                            G_APPLICATION_DEFAULT_FLAGS);
   g_signal_connect(app, "activate", G_CALLBACK(activate), master_state);
   status = g_application_run(G_APPLICATION(app), argc, argv);
   free(grid.stitch_data);

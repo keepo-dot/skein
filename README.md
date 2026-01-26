@@ -86,6 +86,7 @@ The application follows a pragmatic C-style Model-View-Controller pattern:
 * Export to PDF/Image.
 * Adjustable grid dimensions.
 * Undo/Redo stack.
+* Bundle OSS icon theme.
 
 ## License
 

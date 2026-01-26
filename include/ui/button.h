@@ -6,7 +6,7 @@
 typedef struct {
   const char *label;
   const char *icon_name;
-  void (*action)(GtkWidget *, gpointer);
+  StitchType stitch_type;
   ToolbarMode button_type;
   const GdkRGBA *button_color;
 } ButtonInfo;

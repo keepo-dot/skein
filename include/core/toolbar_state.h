@@ -10,6 +10,7 @@ typedef enum {
   MODE_ERASE,
   MODE_PICKER,
   MODE_COLOR,
+  MODE_STITCH,
   NUM_TOOLS,
 } ToolbarMode;
 
@@ -18,8 +19,10 @@ typedef struct {
   GtkWidget *color_buttons[7];
   ToolbarMode active_mode;
   GdkRGBA active_color;
-  StitchData active_stitch;
+  StitchType active_stitch;
   GtkWidget *active_button;
+  GtkWidget *palette_container;
+  GtkWidget *stitch_type_container;
 } ToolbarState;
 
 #endif // !TOOLBAR_STATE

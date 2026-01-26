@@ -4,10 +4,19 @@
 #define PATTERN_DATA_H
 
 #define STITCH_SIZE 30
+typedef enum {
+  STITCH_EMPTY = 0,
+  STITCH_KNIT,
+  STITCH_PURL,
+  STITCH_YO,
+  STITCH_K2TOG,
+  STITCH_SSK,
+  NUM_STITCH_TOOLS,
+} StitchType;
 
 typedef struct {
-  char stitch_type[8];  // Type of stitch, 4 byte string ie M1L, K, P, SSK, YO.
   GdkRGBA stitch_color; // color value
+  StitchType stitch_type;
 } StitchData;
 
 typedef struct {
@@ -19,6 +28,8 @@ typedef struct {
   double camera_y;         // viewport y position.
   double drag_start_x;     // drag event start x pos.
   double drag_start_y;     // drag event start y pos.
+  double mouse_start_x;    // mouse start x pos.
+  double mouse_start_y;    // mouse start y pos.
 } PatternData;
 
 #endif

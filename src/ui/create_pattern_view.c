@@ -2,35 +2,11 @@
 #include "activate.h"
 #include "app_state.h"
 #include "glib-object.h"
+#include "on_drag_begin.h"
+#include "on_drag_update.h"
 #include "pattern_data.h"
 #include "toolbar_state.h"
 #include <gtk/gtk.h>
-
-static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
-                          double start_y, AppState *app_state) {
-  ToolbarState *toolbar_state = app_state->ui->toolbar_state;
-  PatternData *grid_data = app_state->pattern;
-
-  if (toolbar_state && toolbar_state->active_mode == MODE_MOVE) {
-    grid_data->drag_start_x = grid_data->camera_x;
-    grid_data->drag_start_y = grid_data->camera_y;
-  }
-}
-
-static void on_drag_update(GtkGestureDrag *gesture, double offset_x,
-                           double offset_y, AppState *app_state) {
-  ToolbarState *toolbar_state = app_state->ui->toolbar_state;
-  PatternData *grid_data = app_state->pattern;
-  GtkWidget *area =
-      gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-  if (toolbar_state->active_mode == MODE_MOVE) {
-    double new_camera_pos_x = grid_data->drag_start_x - offset_x;
-    double new_camera_pos_y = grid_data->drag_start_y - offset_y;
-    grid_data->camera_x = new_camera_pos_x;
-    grid_data->camera_y = new_camera_pos_y;
-    gtk_widget_queue_draw(area);
-  }
-}
 
 static gboolean needs_redraw(GtkWidget *widget, GdkFrameClock *frame_clock,
                              gpointer grid_data) {

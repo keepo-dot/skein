@@ -26,12 +26,16 @@ On Arch Linux:
 
 ```bash
 sudo pacman -S gtk4 base-devel
+git clone http://www.github.com/keepo-dot/skein
+cd skein
 ```
 
 On Debian/Ubuntu:
 
 ```bash
 sudo apt install libgtk-4-dev build-essential
+git clone http://www.github.com/keepo-dot/skein
+cd skein
 ```
 
 ## Building

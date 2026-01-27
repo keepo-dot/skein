@@ -48,11 +48,11 @@ typedef struct {
   StitchType stitch_type;      // stitch type for stitch buttons.
   ToolbarMode button_type;     // tool type for tool buttons.
   const GdkRGBA *button_color; // color value for default palette.
+  gpointer type_ptr;
 } ButtonInfo;
 
 typedef struct {
-  GtkWidget *tool_buttons[7];
-  // GtkWidget *color_buttons[7];
+  GtkWidget *tool_container;
   ToolbarMode active_mode;
   GdkRGBA active_color;
   StitchType active_stitch;

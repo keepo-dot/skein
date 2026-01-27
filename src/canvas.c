@@ -38,8 +38,7 @@ static void on_drag_update(GtkGestureDrag *gesture, double offset_x,
         (row >= 0 && row < grid_data->height)) {
       int index = (row * grid_data->width) + column;
       GdkRGBA initial_color = toolbar_state->active_color;
-      if (initial_color.red != 0 && initial_color.green != 0 &&
-          initial_color.blue != 0 && initial_color.alpha != 0) {
+      if (initial_color.alpha != 0) {
         grid_data->stitch_data[index].stitch_color =
             toolbar_state->active_color;
         gtk_widget_queue_draw(area);
@@ -83,8 +82,7 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
         (row >= 0 && row < grid_data->height)) {
       int index = (row * grid_data->width) + column;
       GdkRGBA initial_color = toolbar_state->active_color;
-      if (initial_color.red != 0 && initial_color.green != 0 &&
-          initial_color.blue != 0 && initial_color.alpha != 0) {
+      if (initial_color.alpha != 0) {
         grid_data->stitch_data[index].stitch_color =
             toolbar_state->active_color;
         gtk_widget_queue_draw(area);

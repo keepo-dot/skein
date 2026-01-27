@@ -99,7 +99,10 @@ GtkWidget *create_toolbar(ToolbarState *state) {
   gtk_box_append(GTK_BOX(toolbar), state->tool_container);
   gtk_box_append(GTK_BOX(toolbar), state->palette_container);
   gtk_box_append(GTK_BOX(toolbar), state->stitch_type_container);
-  gtk_widget_set_visible(state->palette_container, false);
-  gtk_widget_set_visible(state->stitch_type_container, false);
+  // sets the move tool to active on startup.
+  GtkWidget *first_tool = gtk_widget_get_first_child(state->tool_container);
+  if (first_tool && GTK_IS_TOGGLE_BUTTON(first_tool)) {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(first_tool), true);
+  }
   return toolbar;
 }

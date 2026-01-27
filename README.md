@@ -23,49 +23,58 @@ To build this project, you will need a C compiler (Clang/GCC), Make, and the GTK
 * **Make**
 
 ### Installation (Arch Linux)
-```
+
+```bash
     sudo pacman -S gtk4 base-devel
     git clone https://github.com/keepo-dot/skein
     cd skein
 ```
 
 ### Installation (Debian/Ubuntu)
-```
+
+```bash
     sudo apt install libgtk-4-dev build-essential
     git clone https://github.com/keepo-dot/skein
     cd skein
 ```
+
 ## Building
 
-The project uses a modular build system. To compile:
-```
+The project uses a standard C build process. To compile the executable into the bin/ directory:
+
+```bash
     make
 ```
+
 To clean up object files and binaries:
-```
+
+```bash
     make clean
 ```
 
 ## Usage
 
-1. **Launch the application:**
+1. Launch the application:
+
+```bash
+    ./bin/skein
 ```
-./bin/skein
-```
-1. **Navigation:** Select the 'Move' tool to click and drag the canvas.
-2. **Painting:** Select the 'Paint' tool and choose a color from the palette to draw colorwork.
-3. **Symbols:** Select the 'Stitch' tool (Grid icon) to overlay technical symbols. The palette will automatically switch to show available stitch types.
+
+2. **Navigation:** Select the 'Move' tool to click and drag the canvas.
+3. **Painting:** Select the 'Paint' tool and choose a color from the palette to draw colorwork.
+4. **Symbols:** Select the 'Stitch' tool (Grid icon) to overlay technical symbols. The palette will automatically switch to show available stitch types.
 
 ## Architecture
 
-Skein utilizes a pragmatic, modular C architecture designed for high performance and low header overhead:
+Skein utilizes a pragmatic, modular C architecture designed for readability and maintainability:
 
-* **include/types.h**: The central source of truth, containing all structs (AppState, StitchData) and enums.
-* **src/skein.c**: Application entry point; handles GtkApplication lifecycle and state initialization.
-* **src/canvas.c**: High-performance grid rendering. Implements viewport culling to ensure smooth interaction on 1,000,000-cell grids.
-* **src/toolbar.c**: Dynamic UI generation for the tool sidebar, color swatches, and stitch selection.
+* **include/types.h**: Defines application-wide structures (AppState, StitchData) and enumerations used by multiple source files.
+* **src/resources.c** / include/resources.h: Stores static arrays for the toolbar buttons, color palette, and stitch symbols, separating content from widget creation logic.
+* **src/skein.c**: Initializes the GtkApplication, sets up the main window, and allocates the initial application state.
+* **src/canvas.c**: High-performance grid rendering. Implements viewport culling to ensure smooth interaction on large grids.
+* **src/toolbar.c**: Handles the creation of the tool sidebar. Uses a helper function to build button groups based on definitions in resources.c.
 * **src/skein_window.c**: Manages the main window shell and layout packing.
-* **src/utils.c**: Shared utilities, including the global yarn color palette and button factory logic.
+* **src/utils.c**: Shared UI utilities, including swatch drawing and shared helper functions.
 
 ## Roadmap
 

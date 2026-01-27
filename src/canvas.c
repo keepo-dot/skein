@@ -37,9 +37,15 @@ static void on_drag_update(GtkGestureDrag *gesture, double offset_x,
     if ((column >= 0 && column < grid_data->width) &&
         (row >= 0 && row < grid_data->height)) {
       int index = (row * grid_data->width) + column;
-      grid_data->stitch_data[index].stitch_color = toolbar_state->active_color;
-      gtk_widget_queue_draw(area);
+      GdkRGBA initial_color = toolbar_state->active_color;
+      if (initial_color.red != 0 && initial_color.green != 0 &&
+          initial_color.blue != 0 && initial_color.alpha != 0) {
+        grid_data->stitch_data[index].stitch_color =
+            toolbar_state->active_color;
+        gtk_widget_queue_draw(area);
+      }
     }
+
   } else if (toolbar_state->active_mode == MODE_STITCH) {
     double current_mouse_x = grid_data->mouse_start_x + offset_x;
     double current_mouse_y = grid_data->mouse_start_y + offset_y;
@@ -76,8 +82,13 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
     if ((column >= 0 && column < grid_data->width) &&
         (row >= 0 && row < grid_data->height)) {
       int index = (row * grid_data->width) + column;
-      grid_data->stitch_data[index].stitch_color = toolbar_state->active_color;
-      gtk_widget_queue_draw(area);
+      GdkRGBA initial_color = toolbar_state->active_color;
+      if (initial_color.red != 0 && initial_color.green != 0 &&
+          initial_color.blue != 0 && initial_color.alpha != 0) {
+        grid_data->stitch_data[index].stitch_color =
+            toolbar_state->active_color;
+        gtk_widget_queue_draw(area);
+      }
     }
   } else if (toolbar_state && toolbar_state->active_mode == MODE_STITCH) {
     grid_data->mouse_start_x = start_x;
@@ -119,11 +130,6 @@ static void draw_grid(GtkDrawingArea *area, cairo_t *cr, int width, int height,
   start_row = MAX(0, start_row);
   end_column = MIN(grid->width, end_column);
   end_row = MIN(grid->height, end_row);
-
-  if (grid->redraw) {
-    g_print("Drawing Viewport: Cols %d-%d, Rows %d-%d\n", start_column,
-            end_column, start_row, end_row);
-  }
 
   for (int i = start_row; i < end_row; i++) {
     for (int j = start_column; j < end_column; j++) {

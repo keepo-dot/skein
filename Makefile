@@ -1,7 +1,7 @@
 # Compiler and Flags
 CC = clang
 # -Iinclude tells the compiler to look in your include folder for .h files
-CFLAGS = -Wall -Wextra -g $(shell pkg-config --cflags gtk4) -Iinclude
+CFLAGS = -Wall -Wextra -g $(shell pkg-config --cflags gtk4 json-glib-1.0) -Iinclude
 LIBS = $(shell pkg-config --libs gtk4)
 
 # Directory Setup

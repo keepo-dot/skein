@@ -22,4 +22,6 @@ extern ButtonInfo toolbar_buttons_color[];
 #define COLOR_BUTTON_COUNT 7
 extern ButtonInfo toolbar_buttons_stitch_type[];
 #define STITCH_BUTTON_COUNT 5
+extern ButtonInfo toolbar_buttons_fileio[];
+#define FILEIO_BUTTON_COUNT 3
 #endif // !RESOURCES_H

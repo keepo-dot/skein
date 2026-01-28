@@ -21,6 +21,9 @@ typedef enum {
   MODE_PICKER,
   MODE_COLOR,
   MODE_STITCH,
+  MODE_NEWFILE,
+  MODE_SAVEFILE,
+  MODE_LOADFILE,
   NUM_TOOLS,
 } ToolbarMode;
 
@@ -49,16 +52,18 @@ typedef struct {
   ToolbarMode button_type;     // tool type for tool buttons.
   const GdkRGBA *button_color; // color value for default palette.
   gpointer type_ptr;
+  bool is_toggle;
 } ButtonInfo;
 
 typedef struct {
+  GtkWidget *palette_container;
+  GtkWidget *stitch_type_container;
   GtkWidget *tool_container;
+  GtkWidget *fileio_container;
   ToolbarMode active_mode;
   GdkRGBA active_color;
   StitchType active_stitch;
   GtkWidget *active_button;
-  GtkWidget *palette_container;
-  GtkWidget *stitch_type_container;
 } ToolbarState;
 
 typedef struct {

@@ -62,9 +62,13 @@ static void draw_toolbar_icon(GtkDrawingArea *area, cairo_t *cr, int width,
 }
 
 GtkWidget *create_button(ButtonInfo *info) {
-
-  GtkWidget *button = gtk_toggle_button_new();
-
+  GtkWidget *button = NULL;
+  // check button type as not to create the wrong one.
+  if (info->is_toggle == true) {
+    button = gtk_toggle_button_new();
+  } else {
+    button = gtk_button_new();
+  }
   // This creates tool buttons, ie with a NULL button_color.
   if (info->icon_name) {
     gtk_button_set_icon_name(GTK_BUTTON(button), info->icon_name);

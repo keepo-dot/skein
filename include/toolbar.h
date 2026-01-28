@@ -2,5 +2,5 @@
 #define SKEIN_TOOLBAR_H
 #include "types.h"
 #include <gtk/gtk.h>
-GtkWidget *create_toolbar(ToolbarState *state);
+GtkWidget *create_toolbar(AppState *state);
 #endif

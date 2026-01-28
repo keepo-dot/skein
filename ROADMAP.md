@@ -29,10 +29,11 @@
   - Fill an enclosed area with a selected color/stitch.
 
 ### File I/O
-
-- [x] **Save pattern (Native)**
+- [x] **New pattern**
+  - Adjust grid size from user input, reset canvas, draw new grid. *(Only draws transparent grid, need to update draw_grid)*
+- [x] **Save pattern (Native)** (implementation created)
   - Serialize grid, dimensions, and palette to JSON.
-- [ ] **Load pattern**
+- [x] **Load pattern** (implementation created)
   - Restore grid size, colors, and symbols from file.
 - [ ] **Visual Feedback on Save**
   - UI notification ("File Saved") so the user isn't guessing.

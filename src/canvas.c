@@ -44,6 +44,9 @@ static void on_drag_update(GtkGestureDrag *gesture, double offset_x,
       if (initial_color.alpha != 0) {
         grid_data->stitch_data[index].stitch_color =
             toolbar_state->active_color;
+        if (grid_data->stitch_data[index].stitch_type == STITCH_EMPTY) {
+          grid_data->stitch_data[index].stitch_type = STITCH_KNIT;
+        }
         grid_data->redraw = true;
       }
     }
@@ -58,6 +61,23 @@ static void on_drag_update(GtkGestureDrag *gesture, double offset_x,
         (row >= 0 && row < grid_data->height)) {
       int index = (row * grid_data->width) + column;
       grid_data->stitch_data[index].stitch_type = toolbar_state->active_stitch;
+      if (toolbar_state->active_color.alpha != 0.0) {
+        grid_data->stitch_data[index].stitch_color =
+            toolbar_state->active_color;
+      }
+      grid_data->redraw = true;
+    }
+  } else if (toolbar_state && toolbar_state->active_mode == MODE_ERASE) {
+    double current_mouse_x = grid_data->mouse_start_x + offset_x;
+    double current_mouse_y = grid_data->mouse_start_y + offset_y;
+    int column = (int)((current_mouse_x + grid_data->camera_x) / STITCH_SIZE);
+    int row = (int)((current_mouse_y + grid_data->camera_y) / STITCH_SIZE);
+
+    if ((column >= 0 && column < grid_data->width) &&
+        (row >= 0 && row < grid_data->height)) {
+      int index = (row * grid_data->width) + column;
+      grid_data->stitch_data[index].stitch_type = STITCH_EMPTY;
+      grid_data->stitch_data[index].stitch_color = COLOR_EMPTY;
       grid_data->redraw = true;
     }
   }
@@ -88,6 +108,9 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
       if (initial_color.alpha != 0) {
         grid_data->stitch_data[index].stitch_color =
             toolbar_state->active_color;
+        if (grid_data->stitch_data[index].stitch_type == STITCH_EMPTY) {
+          grid_data->stitch_data[index].stitch_type = STITCH_KNIT;
+        }
         grid_data->redraw = true;
       }
     }
@@ -102,6 +125,23 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
         (row >= 0 && row < grid_data->height)) {
       int index = (row * grid_data->width) + column;
       grid_data->stitch_data[index].stitch_type = toolbar_state->active_stitch;
+      if (toolbar_state->active_color.alpha != 0.0) {
+        grid_data->stitch_data[index].stitch_color =
+            toolbar_state->active_color;
+      }
+      grid_data->redraw = true;
+    }
+  } else if (toolbar_state && toolbar_state->active_mode == MODE_ERASE) {
+    grid_data->mouse_start_x = start_x;
+    grid_data->mouse_start_y = start_y;
+    int column = (int)((start_x + grid_data->camera_x) / STITCH_SIZE);
+    int row = (int)((start_y + grid_data->camera_y) / STITCH_SIZE);
+
+    if ((column >= 0 && column < grid_data->width) &&
+        (row >= 0 && row < grid_data->height)) {
+      int index = (row * grid_data->width) + column;
+      grid_data->stitch_data[index].stitch_type = STITCH_EMPTY;
+      grid_data->stitch_data[index].stitch_color = COLOR_EMPTY;
       grid_data->redraw = true;
     }
   }
@@ -137,10 +177,15 @@ static void draw_grid(GtkDrawingArea *area, cairo_t *cr, int width, int height,
       double pixel_x = (j * STITCH_SIZE) - grid->camera_x; // width
       double pixel_y = (i * STITCH_SIZE) - grid->camera_y; // height
       int index = (i * grid->width) + j;
+      GdkRGBA cell_color = grid->stitch_data[index].stitch_color;
+      if (grid->stitch_data[index].stitch_type != STITCH_EMPTY &&
+          grid->stitch_data[index].stitch_color.alpha == 0.0) {
+        cell_color = fg_color;
+      }
       if (app_state->pattern->stitch_data[index].stitch_type == STITCH_EMPTY) {
         gdk_cairo_set_source_rgba(cr, &fg_color);
       } else {
-        gdk_cairo_set_source_rgba(cr, &grid->stitch_data[index].stitch_color);
+        gdk_cairo_set_source_rgba(cr, &cell_color);
       }
       cairo_rectangle(cr, pixel_x, pixel_y, STITCH_SIZE,
                       STITCH_SIZE); // rect to draw

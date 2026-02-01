@@ -18,7 +18,6 @@
 #include "skein_window.h"
 #include "toolbar.h"
 #include "types.h"
-#include "utils.h"
 #include <gtk/gtk.h>
 
 static void activate(GtkApplication *app, gpointer user_data) {
@@ -89,10 +88,6 @@ int main(int argc, char *argv[]) {
   master_state->ui = ui_state;
   master_state->ui->pattern_data = master_state->pattern;
 
-  // paint all stitches to empty white.
-  for (int i = 0; i < (grid.width * grid.height); i++) {
-    grid.stitch_data[i].stitch_color = COLOR_WHITE;
-  }
   /* DEBUG
   g_print("Set stitch color to:\n R: %f\n G: %f\n B: %f\n",
           grid.stitch_data[0].stitch_color.red,

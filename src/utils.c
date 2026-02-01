@@ -20,15 +20,29 @@ void draw_stitch_swatch(GtkDrawingArea *area, cairo_t *cr, int w, int h,
   double size = w * 0.6; // Scale relative to button size
 
   switch (stitch_type) {
-  case STITCH_KNIT: // Vertical Line
-    cairo_move_to(cr, center_x, center_y - (size / 2));
-    cairo_line_to(cr, center_x, center_y + (size / 2));
-    cairo_stroke(cr);
+  case STITCH_KNIT: // No line, knit is default.
     break;
 
   case STITCH_PURL: // Horizontal Dash (or Dot)
     cairo_move_to(cr, center_x - (size / 2), center_y);
     cairo_line_to(cr, center_x + (size / 2), center_y);
+    cairo_stroke(cr);
+    break;
+
+  case STITCH_M1: // New: A twisted loop "e"
+    // Top loop
+    cairo_arc(cr, center_x, center_y - (size / 4), size / 4, 0, 2 * G_PI);
+    // Legs crossing at bottom
+    cairo_move_to(cr, center_x - (size / 4), center_y + (size / 2));
+    cairo_line_to(cr, center_x + (size / 4), center_y); // cross up
+    cairo_stroke(cr);
+    break;
+
+  case STITCH_SLIP: // New: A "V" shape
+    cairo_move_to(cr, center_x - (size / 3), center_y - (size / 3));
+    cairo_line_to(cr, center_x, center_y + (size / 3)); // Down to point
+    cairo_line_to(cr, center_x + (size / 3),
+                  center_y - (size / 3)); // Up to right
     cairo_stroke(cr);
     break;
 

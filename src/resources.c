@@ -44,9 +44,11 @@ ButtonInfo toolbar_buttons_color[] = {
      (gpointer)&COLOR_VIOLET, 1}};
 
 ButtonInfo toolbar_buttons_stitch_type[] = {
-    {"Knit", NULL, STITCH_KNIT, MODE_STITCH, NULL, GINT_TO_POINTER(STITCH_KNIT),
-     1},
     {"Purl", NULL, STITCH_PURL, MODE_STITCH, NULL, GINT_TO_POINTER(STITCH_PURL),
+     1},
+    {"Make 1", NULL, STITCH_M1, MODE_STITCH, NULL, GINT_TO_POINTER(STITCH_M1),
+     1},
+    {"Slip", NULL, STITCH_SLIP, MODE_STITCH, NULL, GINT_TO_POINTER(STITCH_SLIP),
      1},
     {"Yarn Over", NULL, STITCH_YO, MODE_STITCH, NULL,
      GINT_TO_POINTER(STITCH_YO), 1},

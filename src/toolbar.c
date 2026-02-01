@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-void pattern_json_load(char *filename, PatternData *current_canvas) {
+static void pattern_json_load(char *filename, PatternData *current_canvas) {
   GError *error = NULL;
   JsonParser *parser = json_parser_new();
   json_parser_load_from_file(parser, filename, &error);
@@ -70,7 +70,7 @@ void pattern_json_load(char *filename, PatternData *current_canvas) {
   return;
 }
 
-JsonBuilder *pattern_json_builder(PatternData *pattern) {
+static JsonBuilder *pattern_json_builder(PatternData *pattern) {
   JsonBuilder *builder = json_builder_new();
 
   json_builder_begin_object(builder);
@@ -91,7 +91,7 @@ JsonBuilder *pattern_json_builder(PatternData *pattern) {
     json_builder_set_member_name(builder, "stitch_type");
     json_builder_add_int_value(builder, current_stitch->stitch_type);
     json_builder_set_member_name(builder, "stitch_color");
-    json_builder_begin_array(builder);
+    json_builder_begin_object(builder);
     json_builder_add_double_value(builder, current_stitch->stitch_color.red);
     json_builder_add_double_value(builder, current_stitch->stitch_color.green);
     json_builder_add_double_value(builder, current_stitch->stitch_color.blue);
@@ -105,7 +105,7 @@ JsonBuilder *pattern_json_builder(PatternData *pattern) {
   return builder;
 }
 
-void pattern_json_save(JsonBuilder *builder) {
+static void pattern_json_save(JsonBuilder *builder) {
   JsonNode *root = json_builder_get_root(builder);
   JsonGenerator *generator = json_generator_new();
   json_generator_set_root(generator, root);
@@ -113,7 +113,8 @@ void pattern_json_save(JsonBuilder *builder) {
   json_generator_to_file(generator, "pattern.skn", false);
 }
 
-void pattern_reset_size(PatternData *pattern, int new_width, int new_height) {
+static void pattern_reset_size(PatternData *pattern, int new_width,
+                               int new_height) {
   free(pattern->stitch_data);
   pattern->stitch_data =
       calloc((size_t)(new_width * new_height), sizeof(StitchData));
@@ -121,7 +122,7 @@ void pattern_reset_size(PatternData *pattern, int new_width, int new_height) {
   pattern->height = new_height;
 }
 
-void on_new_pattern_confirm(GtkWidget *button, gpointer app_state) {
+static void on_new_pattern_confirm(GtkWidget *button, gpointer app_state) {
   AppState *state = (AppState *)app_state;
   GtkWidget *w_spin = g_object_get_data(G_OBJECT(button), "w-spin");
   GtkWidget *h_spin = g_object_get_data(G_OBJECT(button), "h-spin");
@@ -134,7 +135,8 @@ void on_new_pattern_confirm(GtkWidget *button, gpointer app_state) {
   gtk_window_destroy(GTK_WINDOW(dialog_window));
 }
 
-void show_new_pattern_dialog(GtkWidget *main_window, AppState *app_state) {
+static void show_new_pattern_dialog(GtkWidget *main_window,
+                                    AppState *app_state) {
   GtkWidget *new_pattern_dialog = gtk_window_new();
   gtk_window_set_modal(GTK_WINDOW(new_pattern_dialog), true);
   gtk_window_set_transient_for(GTK_WINDOW(new_pattern_dialog),
@@ -174,7 +176,7 @@ void show_new_pattern_dialog(GtkWidget *main_window, AppState *app_state) {
   gtk_window_present(GTK_WINDOW(new_pattern_dialog));
 }
 
-void on_action_clicked(GtkButton *button, gpointer app_state) {
+static void on_action_clicked(GtkButton *button, gpointer app_state) {
   AppState *state = (AppState *)app_state;
   GtkWidget *main_window = GTK_WIDGET(gtk_widget_get_root(GTK_WIDGET(button)));
   int action =
@@ -185,12 +187,14 @@ void on_action_clicked(GtkButton *button, gpointer app_state) {
     break;
   case MODE_SAVEFILE:
     pattern_json_save(pattern_json_builder(state->pattern));
+    break;
   case MODE_LOADFILE:
     pattern_json_load("pattern.skn", state->pattern);
+    break;
   }
 }
 
-void on_stitch_toggled(GtkToggleButton *button, gpointer toolbar_state) {
+static void on_stitch_toggled(GtkToggleButton *button, gpointer toolbar_state) {
   ToolbarState *state = (ToolbarState *)toolbar_state;
   if (gtk_toggle_button_get_active(button)) {
     StitchType *stitch = g_object_get_data(G_OBJECT(button), "stitch-type");

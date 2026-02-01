@@ -1,4 +1,6 @@
 #include "cairo.h"
+#include "gdk/gdk.h"
+#include "resources.h"
 #include "types.h"
 #include "utils.h"
 #include <gtk/gtk.h>
@@ -135,8 +137,8 @@ static void draw_grid(GtkDrawingArea *area, cairo_t *cr, int width, int height,
       double pixel_x = (j * STITCH_SIZE) - grid->camera_x; // width
       double pixel_y = (i * STITCH_SIZE) - grid->camera_y; // height
       int index = (i * grid->width) + j;
-      if (app_state->pattern->stitch_data[index].stitch_color.alpha == 0.0) {
-        cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
+      if (app_state->pattern->stitch_data[index].stitch_type == STITCH_EMPTY) {
+        gdk_cairo_set_source_rgba(cr, &fg_color);
       } else {
         gdk_cairo_set_source_rgba(cr, &grid->stitch_data[index].stitch_color);
       }

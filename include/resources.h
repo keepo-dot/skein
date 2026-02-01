@@ -14,6 +14,7 @@ extern const GdkRGBA COLOR_INDIGO;
 extern const GdkRGBA COLOR_VIOLET;
 extern const GdkRGBA COLOR_WHITE;
 extern const GdkRGBA COLOR_BLACK;
+extern const GdkRGBA COLOR_EMPTY;
 
 // toolbar data arrays.
 extern ButtonInfo toolbar_buttons_mode[];

@@ -33,7 +33,19 @@
   - Adjust grid size from user input, reset canvas, draw new grid. *(Only draws transparent grid, need to update draw_grid)*
 - [x] **Save pattern (Native)** (implementation created)
   - Serialize grid, dimensions, and palette to JSON.
+<<<<<<< Updated upstream
 - [x] **Load pattern** (implementation created)
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+- [x] **Load pattern** (implementation created)
+=======
+- [x] **Load pattern**
+>>>>>>> Stashed changes
+=======
+- [x] **Load pattern**
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
   - Restore grid size, colors, and symbols from file.
 - [ ] **Visual Feedback on Save**
   - UI notification ("File Saved") so the user isn't guessing.

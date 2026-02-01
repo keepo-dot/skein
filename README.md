@@ -60,9 +60,9 @@ To clean up object files and binaries:
     ./bin/skein
 ```
 
-2. **Navigation:** Select the 'Move' tool to click and drag the canvas.
-3. **Painting:** Select the 'Paint' tool and choose a color from the palette to draw colorwork.
-4. **Symbols:** Select the 'Stitch' tool (Grid icon) to overlay technical symbols. The palette will automatically switch to show available stitch types.
+1. **Navigation:** Select the 'Move' tool to click and drag the canvas.
+2. **Painting:** Select the 'Paint' tool and choose a color from the palette to draw colorwork.
+3. **Symbols:** Select the 'Stitch' tool (Grid icon) to overlay technical symbols. The palette will automatically switch to show available stitch types.
 
 ## Architecture
 
@@ -82,7 +82,6 @@ Skein utilizes a pragmatic, modular C architecture designed for readability and 
   * Eraser tool (remove properties from cells).
   * Color Picker tool (sample properties from grid).
 * **Core Functionality:**
-  * File I/O (Save/Load functionality).
   * Export to PDF/Image.
   * Adjustable grid dimensions.
   * Undo/Redo stack.

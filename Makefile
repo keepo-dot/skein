@@ -1,8 +1,11 @@
+# Samitizer Flags
+SANITIZER_FLAGS = -fsanitize=address,undefined
+
 # Compiler and Flags
 CC = clang
 # -Iinclude tells the compiler to look in your include folder for .h files
-CFLAGS = -Wall -Wextra -g $(shell pkg-config --cflags gtk4 json-glib-1.0) -Iinclude
-LIBS = $(shell pkg-config --libs gtk4)
+CFLAGS = -Wall -Wextra -g $(shell pkg-config --cflags gtk4 json-glib-1.0) -Iinclude #$(SANITIZER_FLAGS)
+LIBS = $(shell pkg-config --libs gtk4 json-glib-1.0) #$(SANITIZER_FLAGS)
 
 # Directory Setup
 SRC_DIR = src

@@ -78,9 +78,6 @@ Skein utilizes a pragmatic, modular C architecture designed for readability and 
 
 ## Roadmap
 
-* **Tool Implementation:**
-  * Eraser tool (remove properties from cells).
-  * Color Picker tool (sample properties from grid).
 * **Core Functionality:**
   * Export to PDF/Image.
   * Adjustable grid dimensions.

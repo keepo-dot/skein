@@ -29,7 +29,7 @@ To build this project, you will need a C compiler (Clang/GCC), Make, and the GTK
 
 ```bash
 sudo pacman -S gtk4 json-glib base-devel
-git clone [https://github.com/keepo-dot/skein](https://github.com/keepo-dot/skein)
+git clone https://github.com/keepo-dot/skein
 cd skein
 ```
 
@@ -37,7 +37,7 @@ cd skein
 
 ```bash
 sudo apt install libgtk-4-dev libjson-glib-dev build-essential
-git clone [https://github.com/keepo-dot/skein](https://github.com/keepo-dot/skein)
+git clone https://github.com/keepo-dot/skein
 cd skein
 ```
 

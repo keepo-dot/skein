@@ -83,11 +83,14 @@ Skein utilizes a pragmatic, modular C architecture designed for readability and 
   * Adjustable grid dimensions.
   * Undo/Redo stack.
 * **UI/UX:**
+
   * Welcome screen for pattern creation/loading.
   * Keyboard shortcuts (Spacebar to pan, Alt+S for Stitch Type, etc).
   * Bundled OSS icon theme.
 * **Platform Support:**
   * Windows Release (likely via MSYS2).
+
+See [Roadmap](/ROADMAP.md) for details.
 
 ## License
 

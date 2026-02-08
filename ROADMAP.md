@@ -21,9 +21,9 @@
 
 - [x] **Active Tools UI**
   - Visible selection for Brush, Eraser, Picker, and Palette.
-- [ ] **Eraser tool**
+- [x] **Eraser tool**
   - Clear a cell back to “empty” (handling transparent/no-stitch state).
-- [ ] **Color picker**
+- [x] **Color picker**
   - Click a cell to set the current active color.
 - [ ] **Flood Fill (Paint Bucket)**
   - Fill an enclosed area with a selected color/stitch.

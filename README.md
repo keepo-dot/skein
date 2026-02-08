@@ -99,4 +99,4 @@ See [ROADMAP.md](ROADMAP.md) for details.
 **Skein** is licensed under the GNU General Public License v3.0 (GPLv3).
 See the [LICENSE](LICENSE) file for details.
 
-This application utilizes the GTK4 toolkit and the Adwaita Icon Theme, which are properties of the GNOME Project.application utilizes the GTK4 toolkit and the Adwaita Icon Theme, which are properties of the GNOME Project.
+This application utilizes the GTK4 toolkit and the Adwaita Icon Theme, which are properties of the GNOME Project.

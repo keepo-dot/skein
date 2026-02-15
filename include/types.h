@@ -2,8 +2,6 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#define STITCH_SIZE 30
-
 typedef enum {
   STITCH_EMPTY = 0,
   STITCH_KNIT,
@@ -45,6 +43,8 @@ typedef struct {
   double drag_start_y;     // drag event start y pos.
   double mouse_start_x;    // mouse start x pos.
   double mouse_start_y;    // mouse start y pos.
+  int stitch_size;
+
 } PatternData;
 
 typedef struct {

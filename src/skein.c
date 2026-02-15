@@ -55,8 +55,9 @@ int main(int argc, char *argv[]) {
   // Setup grid.
   PatternData grid;
 
-  grid.width = 450;
-  grid.height = 600;
+  grid.width = 100;
+  grid.height = 100;
+  grid.stitch_size = 30;
 
   // Allocate memory for AppState.
   master_state = calloc(1, sizeof(AppState));

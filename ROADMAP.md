@@ -12,7 +12,7 @@
   - Toggle between “color only” and “symbol” mode.
 - [x] **Move the grid / pan the view**
   - Click-and-drag panning.
-- [ ] **Zoom Canvas**
+- [x] **Zoom Canvas**
   - Zoom in/out to handle larger patterns or detailed work.
 - [ ] **Resize Grid**
   - Change dimensions of an active pattern (add/remove rows or cols) without clearing it.
@@ -36,7 +36,7 @@
   - Serialize grid, dimensions, and palette to JSON.
 - [x] **Load pattern**
   - Restore grid size, colors, and symbols from file.
-- [ ] **Visual Feedback on Save**
+- [x] **Visual Feedback on Save & Load**
   - UI notification ("File Saved") so the user isn't guessing.
 - [ ] **Basic Error Handling**
   - Prevent crashes on corrupt files; show error dialogs.

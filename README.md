@@ -7,7 +7,8 @@ A native Linux desktop application for creating and editing knitting patterns. B
 * **Vector-Based Rendering:** Patterns are rendered using Cairo for crisp scaling at any zoom level.
 * **Dual-Layer Editing:** Support for distinct "Yarn Color" (background) and "Stitch Type" (foreground symbol) layers.
 * **Smart Contrast:** Stitch symbols automatically adjust between black and white based on the luminance of the underlying yarn color.
-* **File Persistence:** Save and load your work to a custom JSON format (`.skn`).
+* **File Persistence:** Save and load your work to a custom JSON format (`.skn`) using modern asynchronous native file dialogs.
+* **Visual Feedback:** Integrated alert dialogs confirm successful save and load operations.
 * **Infinite Navigation:** Pan support for navigating large pattern grids.
 * **Tools & Modes:**
   * **Move:** Pan the camera view.
@@ -27,7 +28,7 @@ To build this project, you will need a C compiler (Clang/GCC), Make, and the GTK
 
 ### Installation (Arch Linux)
 
-```bash
+```
 sudo pacman -S gtk4 json-glib base-devel
 git clone https://github.com/keepo-dot/skein
 cd skein
@@ -35,7 +36,7 @@ cd skein
 
 ### Installation (Debian/Ubuntu)
 
-```bash
+```
 sudo apt install libgtk-4-dev libjson-glib-dev build-essential
 git clone https://github.com/keepo-dot/skein
 cd skein
@@ -45,13 +46,14 @@ cd skein
 
 The project uses a standard C build process. To compile the executable into the `bin/` directory:
 
-```bash
+```
+
 make
 ```
 
 To clean up object files and binaries:
 
-```bash
+```
 make clean
 ```
 
@@ -59,12 +61,12 @@ make clean
 
 1. Launch the application:
 
-```bash
+```
 ./bin/skein
 ```
 
-1. **File Operations:** Use the file icons in the toolbar to Create New (with custom dimensions), Save, or Load patterns.
-2. **Navigation:** Select the 'Move' tool (Arrow icon) to click and drag the canvas.
+1. **File Operations:** Use the file icons in the toolbar to Create New (with custom dimensions), Save, or Load patterns. The application provides confirmation alerts upon successful file operations.
+2. **Navigation:** Select the 'Move' tool (Arrow icon) to click and drag the canvas. Use `Ctrl + Scroll` to zoom the canvas.
 3. **Painting:** Select the 'Paint' tool (Brush icon) and choose a color from the palette to draw colorwork.
 4. **Editing:** Use the 'Eraser' to remove stitches, or the 'Picker' (Eyedropper) to sample an existing color from the grid.
 5. **Symbols:** Select the 'Stitch' tool (Grid icon) to overlay technical symbols. The palette will automatically switch to show available stitch types.
@@ -73,11 +75,11 @@ make clean
 
 Skein utilizes a pragmatic, modular C architecture designed for readability and maintainability:
 
-* **include/types.h**: Defines application-wide structures (AppState, StitchData) and enumerations.
+* **include/types.h**: Defines application-wide structures (AppState, StitchData) and enumerations. AppState now tracks the main window for global access by dialogs.
 * **src/resources.c**: Stores static arrays for the toolbar buttons, color palette, and stitch symbols.
 * **src/skein.c**: Entry point. Initializes the GtkApplication and memory allocation.
 * **src/canvas.c**: High-performance grid rendering. Implements viewport culling and tool logic (Paint, Erase, Picker).
-* **src/toolbar.c**: Handles the creation of the tool sidebar and manages JSON File I/O.
+* **src/toolbar.c**: Handles the creation of the tool sidebar and manages asynchronous JSON File I/O with user feedback.
 * **src/skein_window.c**: Manages the main window shell and layout packing.
 * **src/utils.c**: Shared UI utilities, including vector symbol drawing.
 

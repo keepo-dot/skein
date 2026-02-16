@@ -115,7 +115,7 @@ Skein is actively being developed with a focus on becoming a complete pattern-dr
 * Save/Load custom color palettes.
 * Ravelry API integration for pattern fetching.
 
-*See `ROADMAP.md` for the full, detailed feature pipeline.*
+*See [ROADMAP.md](/ROADMAP.md) for the full, detailed feature pipeline.*
 
 ## Contributing
 
@@ -124,6 +124,6 @@ As this is a soft-release to the open-source community, pull requests, issue rep
 ## License
 
 **Skein** is licensed under the GNU General Public License v3.0 (GPLv3).
-See the `LICENSE` file for full details.
+See the [LICENSE](/LICENSE) file for full details.
 
 This application utilizes the GTK4 toolkit and the Adwaita Icon Theme, which are properties of the GNOME Project.

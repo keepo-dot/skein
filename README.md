@@ -3,6 +3,9 @@
 ![C](https://img.shields.io/badge/C-00599C?style=flat-square&logo=c&logoColor=white)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/keepo-dot/skein/blob/main/LICENSE)
 ![GitHub Repo stars](https://img.shields.io/github/stars/keepo-dot/skein?style=social)
+![GitHub forks](https://img.shields.io/github/forks/keepo-dot/skein?style=social)
+![GitHub repo size](https://img.shields.io/github/repo-size/keepo-dot/skein)
+![GitHub last commit](https://img.shields.io/github/last-commit/keepo-dot/skein)
 
 A lightweight, native Linux desktop application for designing and standardizing knitting charts, built entirely in C with GTK4.
 

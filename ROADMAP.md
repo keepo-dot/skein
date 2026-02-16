@@ -38,7 +38,7 @@
   - Restore grid size, colors, and symbols from file.
 - [x] **Visual Feedback on Save & Load**
   - UI notification ("File Saved") so the user isn't guessing.
-- [ ] **Basic Error Handling**
+- [x] **Basic Error Handling**
   - Prevent crashes on corrupt files; show error dialogs.
 
 ---

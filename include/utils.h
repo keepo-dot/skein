@@ -1,19 +1,28 @@
 #ifndef UTILS_H
+#define UTILS_H
+
 #include "types.h"
 #include <gtk/gtk.h>
-
-extern const GdkRGBA COLOR_RED;
-extern const GdkRGBA COLOR_ORANGE;
-extern const GdkRGBA COLOR_YELLOW;
-extern const GdkRGBA COLOR_GREEN;
-extern const GdkRGBA COLOR_BLUE;
-extern const GdkRGBA COLOR_INDIGO;
-extern const GdkRGBA COLOR_VIOLET;
-extern const GdkRGBA COLOR_WHITE;
-extern const GdkRGBA COLOR_BLACK;
+#include <json-glib-1.0/json-glib/json-glib.h>
 
 void draw_stitch_swatch(GtkDrawingArea *area, cairo_t *cr, int w, int h,
                         gpointer user_data);
 GtkWidget *create_button(ButtonInfo *info);
+
+bool is_pattern_empty(PatternData *pattern);
+void pattern_reset_size(PatternData *pattern, int new_width, int new_height);
+
+void pattern_json_load(char *filename, PatternData *current_canvas);
+void pattern_json_save(JsonBuilder *builder, char *file_path);
+
+void show_new_pattern_dialog(GtkWidget *main_window, AppState *app_state);
+void on_new_pattern_confirm(GtkWidget *button, gpointer app_state);
+GtkFileDialog *setup_file_dialog(char *window_title);
+void on_save_dialog_finish(GObject *file_dialog, GAsyncResult *save_file,
+                           gpointer app_state_p);
+void on_load_dialog_finish(GObject *file_dialog, GAsyncResult *file_to_open,
+                           gpointer app_state_p);
+void on_empty_save_response(GObject *source_object, GAsyncResult *res,
+                            gpointer user_data);
 
 #endif // !UTILS_H

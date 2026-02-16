@@ -78,6 +78,7 @@ typedef struct {
 typedef struct {
   PatternData *pattern;
   UiState *ui;
+  GtkWidget *main_window;
 } AppState;
 
 #endif // !TYPES_H

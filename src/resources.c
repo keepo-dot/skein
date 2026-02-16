@@ -2,6 +2,10 @@
 #include "glibconfig.h"
 #include <gtk/gtk.h>
 
+// file config
+const char *FILTER_NAME = "Skein Patterns";
+const char *FILE_TYPE = "*.skn";
+
 // global color constants.
 const GdkRGBA COLOR_RED = {1.0, 0.0, 0.0, 1.0};
 const GdkRGBA COLOR_ORANGE = {1.0, 0.65, 0.0, 1.0};

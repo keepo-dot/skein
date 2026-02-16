@@ -1,3 +1,6 @@
+#include "gio/gio.h"
+#include "glib-object.h"
+#include "glib.h"
 #include "resources.h"
 #include "types.h"
 #include "utils.h"
@@ -5,7 +8,18 @@
 #include <json-glib-1.0/json-glib/json-glib.h>
 #include <stddef.h>
 #include <stdio.h>
-
+static GtkFileDialog *setup_file_dialog(char *window_title) {
+  GListStore *filter_list = g_list_store_new(GTK_TYPE_FILE_FILTER);
+  GtkFileDialog *new_dialog = gtk_file_dialog_new();
+  gtk_file_dialog_set_title(new_dialog, window_title);
+  GtkFileFilter *file_filter = gtk_file_filter_new();
+  gtk_file_filter_set_name(file_filter, FILTER_NAME);
+  gtk_file_filter_add_pattern(file_filter, FILE_TYPE);
+  g_list_store_append(filter_list, file_filter);
+  gtk_file_dialog_set_default_filter(new_dialog, file_filter);
+  g_object_unref(filter_list);
+  return new_dialog;
+}
 static void pattern_json_load(char *filename, PatternData *current_canvas) {
   GError *error = NULL;
   JsonParser *parser = json_parser_new();
@@ -91,7 +105,7 @@ static JsonBuilder *pattern_json_builder(PatternData *pattern) {
     json_builder_set_member_name(builder, "stitch_type");
     json_builder_add_int_value(builder, current_stitch->stitch_type);
     json_builder_set_member_name(builder, "stitch_color");
-    json_builder_begin_object(builder);
+    json_builder_begin_array(builder);
     json_builder_add_double_value(builder, current_stitch->stitch_color.red);
     json_builder_add_double_value(builder, current_stitch->stitch_color.green);
     json_builder_add_double_value(builder, current_stitch->stitch_color.blue);
@@ -105,12 +119,12 @@ static JsonBuilder *pattern_json_builder(PatternData *pattern) {
   return builder;
 }
 
-static void pattern_json_save(JsonBuilder *builder) {
+static void pattern_json_save(JsonBuilder *builder, char *file_path) {
   JsonNode *root = json_builder_get_root(builder);
   JsonGenerator *generator = json_generator_new();
   json_generator_set_root(generator, root);
   json_generator_set_pretty(generator, true);
-  json_generator_to_file(generator, "pattern.skn", false);
+  json_generator_to_file(generator, file_path, false);
 }
 
 static void pattern_reset_size(PatternData *pattern, int new_width,
@@ -176,6 +190,50 @@ static void show_new_pattern_dialog(GtkWidget *main_window,
   gtk_window_present(GTK_WINDOW(new_pattern_dialog));
 }
 
+static void on_save_dialog_finish(GObject *file_dialog, GAsyncResult *save_file,
+                                  gpointer app_state_p) {
+  AppState *app_state = (AppState *)app_state_p;
+  GtkWidget *main_window = app_state->main_window;
+  PatternData *pattern = app_state->pattern;
+  GFile *file_to_save = gtk_file_dialog_save_finish(
+      GTK_FILE_DIALOG(file_dialog), save_file, NULL);
+  if (file_to_save == NULL) {
+    return;
+  }
+  char *path = g_file_get_path(file_to_save);
+  if (g_str_has_suffix(path, ".skn")) {
+    pattern_json_save(pattern_json_builder(pattern), path);
+    g_free(path);
+  } else {
+    char *fixed_path = g_strdup_printf("%s.skn", path);
+    pattern_json_save(pattern_json_builder(pattern), fixed_path);
+    g_free(fixed_path);
+  }
+  GtkAlertDialog *alert = gtk_alert_dialog_new("Pattern saved successfully!");
+  gtk_alert_dialog_show(alert, GTK_WINDOW(main_window));
+  g_object_unref(alert);
+
+  g_object_unref(file_to_save);
+}
+static void on_load_dialog_finish(GObject *file_dialog,
+                                  GAsyncResult *file_to_open,
+                                  gpointer app_state_p) {
+  AppState *app_state = (AppState *)app_state_p;
+  GtkWidget *main_window = app_state->main_window;
+  GFile *file_to_load = gtk_file_dialog_open_finish(
+      GTK_FILE_DIALOG(file_dialog), file_to_open, NULL);
+  if (file_to_load == NULL) {
+    return;
+  }
+  char *path = g_file_get_path(file_to_load);
+  pattern_json_load(path, app_state->pattern);
+  GtkAlertDialog *alert = gtk_alert_dialog_new("Pattern loaded successfully!");
+  gtk_alert_dialog_show(alert, GTK_WINDOW(main_window));
+  g_object_unref(alert);
+  g_free(path);
+  g_object_unref(file_to_load);
+}
+
 static void on_action_clicked(GtkButton *button, gpointer app_state) {
   AppState *state = (AppState *)app_state;
   GtkWidget *main_window = GTK_WIDGET(gtk_widget_get_root(GTK_WIDGET(button)));
@@ -185,12 +243,19 @@ static void on_action_clicked(GtkButton *button, gpointer app_state) {
   case MODE_NEWFILE:
     show_new_pattern_dialog(main_window, state);
     break;
-  case MODE_SAVEFILE:
-    pattern_json_save(pattern_json_builder(state->pattern));
+  case MODE_SAVEFILE: {
+    GtkFileDialog *save_dialog = setup_file_dialog("Save Pattern");
+    gtk_file_dialog_save(save_dialog, GTK_WINDOW(main_window), NULL,
+                         on_save_dialog_finish, app_state);
     break;
-  case MODE_LOADFILE:
-    pattern_json_load("pattern.skn", state->pattern);
+  }
+  case MODE_LOADFILE: {
+    GtkFileDialog *load_dialog = setup_file_dialog("Load Pattern");
+    gtk_file_dialog_open(load_dialog, GTK_WINDOW(main_window), NULL,
+                         on_load_dialog_finish, app_state);
+
     break;
+  }
   }
 }
 

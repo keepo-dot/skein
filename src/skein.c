@@ -40,6 +40,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
   // create main window.
   main_window = create_main_window(app, container);
+  app_state->main_window = main_window;
 
   g_print("Pattern loaded: %d x %d\n", grid->width, grid->height);
   gtk_window_present(GTK_WINDOW(main_window));
@@ -50,7 +51,6 @@ int main(int argc, char *argv[]) {
   int status;
   AppState *master_state;
   UiState *ui_state;
-  // ToolbarState *toolbar_state;
 
   // Setup grid.
   PatternData grid;

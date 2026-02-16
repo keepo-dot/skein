@@ -4,6 +4,10 @@
 #include "types.h"
 #include <gtk/gtk.h>
 
+// file config
+extern const char *FILTER_NAME;
+extern const char *FILE_TYPE;
+
 // color constants.
 extern const GdkRGBA COLOR_RED;
 extern const GdkRGBA COLOR_ORANGE;

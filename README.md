@@ -1,11 +1,19 @@
 # Skein
 
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/keepo-dot/skein/actions)
+![Status](https://img.shields.io/badge/status-active-brightgreen.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/keepo-dot/skein)
+
 ![C](https://img.shields.io/badge/C-00599C?style=flat-square&logo=c&logoColor=white)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/keepo-dot/skein/blob/main/LICENSE)
+![GTK4](https://img.shields.io/badge/UI-GTK4-orange.svg)
+[![Clang Format](https://img.shields.io/badge/code%20style-clang-blue.svg)](https://clang.llvm.org/docs/ClangFormat.html)
+
+![GitHub repo size](https://img.shields.io/github/repo-size/keepo-dot/skein)
 ![GitHub Repo stars](https://img.shields.io/github/stars/keepo-dot/skein?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/keepo-dot/skein?style=social)
-![GitHub repo size](https://img.shields.io/github/repo-size/keepo-dot/skein)
-![GitHub last commit](https://img.shields.io/github/last-commit/keepo-dot/skein)
+
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/keepo-dot/skein/pulls)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/keepo-dot/skein/blob/main/LICENSE)
 
 A lightweight, native Linux desktop application for designing and standardizing knitting charts, built entirely in C with GTK4.
 

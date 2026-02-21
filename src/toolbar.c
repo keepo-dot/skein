@@ -1,3 +1,4 @@
+#include "file_io.h"
 #include "glib-object.h"
 #include "glib.h"
 #include "resources.h"
@@ -7,6 +8,87 @@
 #include <json-glib-1.0/json-glib/json-glib.h>
 #include <stddef.h>
 #include <stdio.h>
+
+static void on_save_dialog_finish(GObject *file_dialog, GAsyncResult *save_file,
+                                  gpointer app_state_p) {
+  AppState *app_state = (AppState *)app_state_p;
+  GtkWidget *main_window = app_state->main_window;
+  PatternData *pattern = app_state->pattern;
+  GFile *file_to_save = gtk_file_dialog_save_finish(
+      GTK_FILE_DIALOG(file_dialog), save_file, NULL);
+  if (file_to_save == NULL) {
+    return;
+  }
+  char *path = g_file_get_path(file_to_save);
+  if (g_str_has_suffix(path, ".skn")) {
+    pattern_json_save(pattern_json_builder(pattern), path);
+    g_free(path);
+  } else {
+    char *fixed_path = g_strdup_printf("%s.skn", path);
+    pattern_json_save(pattern_json_builder(pattern), fixed_path);
+    g_free(fixed_path);
+  }
+  GtkAlertDialog *alert = gtk_alert_dialog_new("Pattern saved successfully!");
+  gtk_alert_dialog_show(alert, GTK_WINDOW(main_window));
+  g_object_unref(alert);
+
+  g_object_unref(file_to_save);
+}
+static void on_load_dialog_finish(GObject *file_dialog,
+                                  GAsyncResult *file_to_open,
+                                  gpointer app_state_p) {
+  AppState *app_state = (AppState *)app_state_p;
+  GtkWidget *main_window = app_state->main_window;
+  GError *error = NULL;
+  GFile *file_to_load = gtk_file_dialog_open_finish(
+      GTK_FILE_DIALOG(file_dialog), file_to_open, NULL);
+  if (file_to_load == NULL) {
+    if (error && error->code != G_IO_ERROR_CANCELLED) {
+      GtkAlertDialog *null_alert =
+          gtk_alert_dialog_new("File load failed: %s", error->message);
+      gtk_alert_dialog_show(null_alert, GTK_WINDOW(main_window));
+      g_object_unref(null_alert);
+    }
+    g_clear_error(&error);
+    return;
+  }
+  char *path = g_file_get_path(file_to_load);
+  if (path == NULL) {
+    GtkAlertDialog *null_path =
+        gtk_alert_dialog_new("File load failed: filepath is null or corrupt.");
+    gtk_alert_dialog_show(null_path, GTK_WINDOW(main_window));
+    g_object_unref(null_path);
+    return;
+  }
+  pattern_json_load(path, app_state->pattern);
+  GtkAlertDialog *alert = gtk_alert_dialog_new("Pattern loaded successfully!");
+  gtk_alert_dialog_show(alert, GTK_WINDOW(main_window));
+  g_object_unref(alert);
+  g_free(path);
+  g_object_unref(file_to_load);
+}
+
+static void on_empty_save_response(GObject *source_object, GAsyncResult *res,
+                                   gpointer user_data) {
+  AppState *app_state = (AppState *)user_data;
+  GtkAlertDialog *alert = GTK_ALERT_DIALOG(source_object);
+  GError *error = NULL;
+
+  int response = gtk_alert_dialog_choose_finish(alert, res, &error);
+
+  if (error) {
+    g_print("Error: %s\n", error->message);
+    g_error_free(error);
+    return;
+  }
+
+  if (response == 1) {
+    GtkWidget *main_window = app_state->main_window;
+    GtkFileDialog *save_dialog = setup_file_dialog("Save Pattern");
+    gtk_file_dialog_save(save_dialog, GTK_WINDOW(main_window), NULL,
+                         on_save_dialog_finish, app_state);
+  }
+}
 
 static void on_action_clicked(GtkButton *button, gpointer app_state) {
   AppState *state = (AppState *)app_state;

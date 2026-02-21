@@ -19,6 +19,50 @@ static gboolean needs_redraw(GtkWidget *widget, GdkFrameClock *frame_clock,
   return G_SOURCE_CONTINUE; // tells gtk to run the function again.
 }
 
+static void apply_tool_to_cell(AppState *app_state, int index) {
+  ToolbarState *toolbar_state = app_state->ui->toolbar_state;
+  PatternData *grid_data = app_state->pattern;
+
+  switch (toolbar_state->active_mode) {
+  case MODE_PAINT: {
+    GdkRGBA initial_color = toolbar_state->active_color;
+
+    if (initial_color.alpha != 0) {
+      grid_data->stitch_data[index].stitch_color = toolbar_state->active_color;
+
+      if (toolbar_state->active_stitch != STITCH_EMPTY) {
+        grid_data->stitch_data[index].stitch_type =
+            app_state->ui->toolbar_state->active_stitch;
+      } else if (grid_data->stitch_data[index].stitch_type == STITCH_EMPTY) {
+        grid_data->stitch_data[index].stitch_type = STITCH_KNIT;
+      }
+    }
+
+    grid_data->redraw = true;
+    break;
+  }
+  case MODE_STITCH:
+    grid_data->stitch_data[index].stitch_type = toolbar_state->active_stitch;
+    if (toolbar_state->active_color.alpha != 0.0) {
+      grid_data->stitch_data[index].stitch_color = toolbar_state->active_color;
+    }
+    grid_data->redraw = true;
+    break;
+  case MODE_ERASE:
+    grid_data->stitch_data[index].stitch_type = STITCH_EMPTY;
+    grid_data->stitch_data[index].stitch_color = COLOR_EMPTY;
+    grid_data->redraw = true;
+    break;
+  case MODE_PICKER:
+    if (grid_data->stitch_data[index].stitch_color.alpha > 0.0) {
+      toolbar_state->active_color = grid_data->stitch_data[index].stitch_color;
+    }
+    break;
+  default:
+    break;
+  }
+}
+
 // handles drag events like painting strokes and moving.
 static void on_drag_update(GtkGestureDrag *gesture, double offset_x,
                            double offset_y, AppState *app_state) {
@@ -46,40 +90,7 @@ static void on_drag_update(GtkGestureDrag *gesture, double offset_x,
   } else if ((column >= 0 && column < grid_data->width) &&
              (row >= 0 && row < grid_data->height)) {
     int index = (row * grid_data->width) + column;
-    switch (toolbar_state->active_mode) {
-    case MODE_PAINT: {
-      GdkRGBA initial_color = toolbar_state->active_color;
-      if (initial_color.alpha != 0) {
-        grid_data->stitch_data[index].stitch_color =
-            toolbar_state->active_color;
-        if (grid_data->stitch_data[index].stitch_type == STITCH_EMPTY) {
-          if (toolbar_state->active_stitch != STITCH_EMPTY) {
-            grid_data->stitch_data[index].stitch_type =
-                app_state->ui->toolbar_state->active_stitch;
-          } else {
-            grid_data->stitch_data[index].stitch_type = STITCH_KNIT;
-          }
-        }
-      }
-      grid_data->redraw = true;
-      break;
-    }
-    case MODE_STITCH:
-      grid_data->stitch_data[index].stitch_type = toolbar_state->active_stitch;
-      if (toolbar_state->active_color.alpha != 0.0) {
-        grid_data->stitch_data[index].stitch_color =
-            toolbar_state->active_color;
-      }
-      grid_data->redraw = true;
-      break;
-    case MODE_ERASE:
-      grid_data->stitch_data[index].stitch_type = STITCH_EMPTY;
-      grid_data->stitch_data[index].stitch_color = COLOR_EMPTY;
-      grid_data->redraw = true;
-      break;
-    default:
-      break;
-    }
+    apply_tool_to_cell(app_state, index);
   }
 }
 // handles single click events like drawing a color,or drawing a stitch.
@@ -106,47 +117,7 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
   if ((column >= 0 && column < grid_data->width) &&
       (row >= 0 && row < grid_data->height)) {
     int index = (row * grid_data->width) + column;
-
-    switch (toolbar_state->active_mode) {
-    case MODE_PAINT: {
-      GdkRGBA initial_color = toolbar_state->active_color;
-      if (initial_color.alpha != 0) {
-        grid_data->stitch_data[index].stitch_color =
-            toolbar_state->active_color;
-        if (grid_data->stitch_data[index].stitch_type == STITCH_EMPTY) {
-          if (toolbar_state->active_stitch != STITCH_EMPTY) {
-            grid_data->stitch_data[index].stitch_type =
-                app_state->ui->toolbar_state->active_stitch;
-          } else {
-            grid_data->stitch_data[index].stitch_type = STITCH_KNIT;
-          }
-        }
-      }
-      grid_data->redraw = true;
-      break;
-    }
-    case MODE_STITCH:
-      grid_data->stitch_data[index].stitch_type = toolbar_state->active_stitch;
-      if (toolbar_state->active_color.alpha != 0.0) {
-        grid_data->stitch_data[index].stitch_color =
-            toolbar_state->active_color;
-      }
-      grid_data->redraw = true;
-      break;
-    case MODE_ERASE:
-      grid_data->stitch_data[index].stitch_type = STITCH_EMPTY;
-      grid_data->stitch_data[index].stitch_color = COLOR_EMPTY;
-      grid_data->redraw = true;
-      break;
-    case MODE_PICKER:
-      if (grid_data->stitch_data[index].stitch_color.alpha > 0.0) {
-        toolbar_state->active_color =
-            grid_data->stitch_data[index].stitch_color;
-      }
-      break;
-    default:
-      break;
-    }
+    apply_tool_to_cell(app_state, index);
   }
 }
 

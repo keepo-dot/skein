@@ -53,10 +53,15 @@ static void on_drag_update(GtkGestureDrag *gesture, double offset_x,
         grid_data->stitch_data[index].stitch_color =
             toolbar_state->active_color;
         if (grid_data->stitch_data[index].stitch_type == STITCH_EMPTY) {
-          grid_data->stitch_data[index].stitch_type = STITCH_KNIT;
+          if (toolbar_state->active_stitch != STITCH_EMPTY) {
+            grid_data->stitch_data[index].stitch_type =
+                app_state->ui->toolbar_state->active_stitch;
+          } else {
+            grid_data->stitch_data[index].stitch_type = STITCH_KNIT;
+          }
         }
-        grid_data->redraw = true;
       }
+      grid_data->redraw = true;
       break;
     }
     case MODE_STITCH:
@@ -109,10 +114,15 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
         grid_data->stitch_data[index].stitch_color =
             toolbar_state->active_color;
         if (grid_data->stitch_data[index].stitch_type == STITCH_EMPTY) {
-          grid_data->stitch_data[index].stitch_type = STITCH_KNIT;
+          if (toolbar_state->active_stitch != STITCH_EMPTY) {
+            grid_data->stitch_data[index].stitch_type =
+                app_state->ui->toolbar_state->active_stitch;
+          } else {
+            grid_data->stitch_data[index].stitch_type = STITCH_KNIT;
+          }
         }
-        grid_data->redraw = true;
       }
+      grid_data->redraw = true;
       break;
     }
     case MODE_STITCH:

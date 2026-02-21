@@ -18,7 +18,8 @@ SRCS = $(SRC_DIR)/skein.c \
        $(SRC_DIR)/toolbar.c \
        $(SRC_DIR)/skein_window.c \
        $(SRC_DIR)/utils.c \
-			 $(SRC_DIR)/resources.c
+			 $(SRC_DIR)/resources.c \
+			 $(SRC_DIR)/file_io.c
 
 # Automatically turn .c paths into .o paths in the obj/ folder
 OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)

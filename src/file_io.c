@@ -82,7 +82,7 @@ JsonBuilder *pattern_json_builder(PatternData *pattern) {
   json_builder_set_member_name(builder, "stitch_data");
   json_builder_begin_array(builder);
 
-  for (size_t i = 0; i < (pattern->width * pattern->height); i++) {
+  for (size_t i = 0; i < (size_t)(pattern->width * pattern->height); i++) {
     StitchData *current_stitch = &pattern->stitch_data[i];
     json_builder_begin_object(builder);
     json_builder_set_member_name(builder, "stitch_type");

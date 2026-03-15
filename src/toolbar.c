@@ -1,6 +1,9 @@
 #include "file_io.h"
+#include "gdk/gdk.h"
+#include "gio/gio.h"
 #include "glib-object.h"
 #include "glib.h"
+#include "gtk/gtkshortcut.h"
 #include "resources.h"
 #include "types.h"
 #include "utils.h"
@@ -199,13 +202,45 @@ action_button_group_new(ButtonInfo *btn_group, GCallback callback_func,
   }
   return box;
 }
+static void on_color_selection(GObject *color_dialog, GAsyncResult *res,
+                               gpointer button) {
+  GError *error = NULL;
+  GtkWidget *main_window = (GtkWidget *)gtk_widget_get_root(GTK_WIDGET(button));
+  GdkRGBA *chosen_color;
+  chosen_color = gtk_color_dialog_choose_rgba_finish(
+      GTK_COLOR_DIALOG(color_dialog), res, &error);
+  if (error != NULL) {
+    GtkAlertDialog *err_box =
+        gtk_alert_dialog_new("Error: %s ", error->message);
+    gtk_alert_dialog_show(err_box, GTK_WINDOW(main_window));
+    g_error_free(error);
+    return;
+  }
+  GdkRGBA *existing_color = g_object_get_data(G_OBJECT(button), "button-color");
+  g_object_set_data(G_OBJECT(button), "button-color", chosen_color);
+  GtkWidget *draw_area = gtk_button_get_child(GTK_BUTTON(button));
+  gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(draw_area), draw_color_swatch,
+                                 chosen_color, NULL);
+  gtk_widget_queue_draw(draw_area);
+}
 
-static GtkWidget *toggle_button_group_new(ButtonInfo *btn_group,
-                                          GCallback callback_func,
-                                          gpointer state, const char *data_key,
-                                          size_t count, bool add_separator_left,
-                                          bool add_seperator_right,
-                                          int alignment) {
+static void on_color_rc(GtkGestureClick *rc_listener, gint n_press, gdouble x,
+                        gdouble y, gpointer state) {
+  GtkWidget *listener_widget =
+      gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(rc_listener));
+  GtkWidget *main_window = (GtkWidget *)gtk_widget_get_root(listener_widget);
+  GtkColorDialog *color_dialog = gtk_color_dialog_new();
+  GdkRGBA *button_color =
+      g_object_get_data(G_OBJECT(listener_widget), "button-color");
+  gtk_color_dialog_choose_rgba(color_dialog, GTK_WINDOW(main_window),
+                               button_color, NULL, on_color_selection,
+                               listener_widget);
+}
+
+static GtkWidget *toggle_button_group_new(
+    ButtonInfo *btn_group, GCallback callback_func, GCallback right_click_cb,
+    gpointer state, const char *data_key, size_t count, bool add_separator_left,
+    bool add_seperator_right, int alignment) {
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   if (alignment == 1) {
     gtk_widget_set_halign(box, GTK_ALIGN_END);
@@ -221,8 +256,15 @@ static GtkWidget *toggle_button_group_new(ButtonInfo *btn_group,
     GtkWidget *button = create_button(current_button);
     if (button == NULL) {
       g_print("Error: %s button is NULL\n", current_button->label);
+    }
 
-    } else if (i == 0) {
+    if (right_click_cb) {
+      GtkGesture *rc_listener = gtk_gesture_click_new();
+      gtk_widget_add_controller(button, GTK_EVENT_CONTROLLER(rc_listener));
+      g_signal_connect(rc_listener, "released", right_click_cb, NULL);
+      gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(rc_listener), 3);
+    }
+    if (i == 0) {
       leader_button = button;
     } else {
       gtk_toggle_button_set_group(GTK_TOGGLE_BUTTON(button),
@@ -245,18 +287,19 @@ GtkWidget *create_toolbar(AppState *app_state) {
 
   // Create tool buttons.
   toolbar_state->tool_container = toggle_button_group_new(
-      toolbar_buttons_mode, G_CALLBACK(on_tool_toggled), toolbar_state,
+      toolbar_buttons_mode, G_CALLBACK(on_tool_toggled), NULL, toolbar_state,
       "tool-type", MODE_BUTTON_COUNT, false, true, 0);
 
   // create palette buttons.
   toolbar_state->palette_container = toggle_button_group_new(
-      toolbar_buttons_color, G_CALLBACK(on_color_toggled), toolbar_state,
-      "button-color", COLOR_BUTTON_COUNT, true, false, 0);
+      toolbar_buttons_color, G_CALLBACK(on_color_toggled),
+      G_CALLBACK(on_color_rc), toolbar_state, "button-color",
+      COLOR_BUTTON_COUNT, true, false, 0);
 
   // create stitch buttons.
   toolbar_state->stitch_type_container = toggle_button_group_new(
-      toolbar_buttons_stitch_type, G_CALLBACK(on_stitch_toggled), toolbar_state,
-      "stitch-type", STITCH_BUTTON_COUNT, true, false, 0);
+      toolbar_buttons_stitch_type, G_CALLBACK(on_stitch_toggled), NULL,
+      toolbar_state, "stitch-type", STITCH_BUTTON_COUNT, true, false, 0);
   // create file io buttons.
   toolbar_state->fileio_container = action_button_group_new(
       toolbar_buttons_fileio, G_CALLBACK(on_action_clicked), app_state,

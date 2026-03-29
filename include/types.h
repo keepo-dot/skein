@@ -33,6 +33,23 @@ typedef struct {
 } StitchData;
 
 typedef struct {
+  int cell_num;
+  StitchData before_state;
+  StitchData after_state;
+} StitchDelta;
+
+typedef struct {
+  size_t group_size;
+  StitchDelta *action;
+} ActionGroup;
+
+typedef struct {
+  size_t table_size;
+  ActionGroup *group;
+  int current_position;
+} HistoryTable;
+
+typedef struct {
   int width;               // X stitches wide.
   int height;              // Y rows high.
   StitchData *stitch_data; // What's actually IN the objects in the grid.
@@ -44,7 +61,7 @@ typedef struct {
   double mouse_start_x;    // mouse start x pos.
   double mouse_start_y;    // mouse start y pos.
   int stitch_size;
-
+  HistoryTable *history_table;
 } PatternData;
 
 typedef struct {

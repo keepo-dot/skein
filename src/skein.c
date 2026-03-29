@@ -72,6 +72,13 @@ int main(int argc, char *argv[]) {
     g_print("Error: stitch data memory allocation failed.");
     return 1;
   }
+
+  // Allocate memory for the HistoryTable.
+  size_t ht_cap = 10;
+  grid.history_table = calloc(1, sizeof(HistoryTable));
+  grid.history_table->group = calloc(ht_cap, sizeof(ActionGroup));
+  grid.history_table->table_size = ht_cap;
+
   // Allocate memory for the UiState.
   ui_state = calloc(1, sizeof(UiState));
   if (ui_state == NULL) {

@@ -62,6 +62,24 @@ static void apply_tool_to_cell(AppState *app_state, int index) {
     break;
   }
 }
+// handles release events.
+static void on_drag_end(GtkGestureDrag *gesture, double offset_x,
+                        double offset_y, AppState *app_state) {
+  HistoryTable *history = app_state->pattern->history_table;
+  StitchDelta *first_delta =
+      &history->group[history->current_position - 1].action[0];
+  GdkRGBA before_color = first_delta->before_state.stitch_color;
+  GdkRGBA after_color = first_delta->after_state.stitch_color;
+  if (before_color.red == after_color.red &&
+      before_color.green == after_color.green &&
+      before_color.blue == after_color.blue &&
+      before_color.alpha == after_color.alpha &&
+      first_delta->before_state.stitch_type ==
+          first_delta->after_state.stitch_type) {
+    history->current_position -= 1;
+    free(history->group[history->current_position - 1].action);
+  }
+}
 
 // handles drag events like painting strokes and moving.
 static void on_drag_update(GtkGestureDrag *gesture, double offset_x,
@@ -90,7 +108,22 @@ static void on_drag_update(GtkGestureDrag *gesture, double offset_x,
   } else if ((column >= 0 && column < grid_data->width) &&
              (row >= 0 && row < grid_data->height)) {
     int index = (row * grid_data->width) + column;
-    apply_tool_to_cell(app_state, index);
+    ActionGroup *agroup =
+        &grid_data->history_table
+             ->group[grid_data->history_table->current_position - 1];
+    if (index == agroup->action[agroup->group_size - 1].cell_num) {
+      return;
+    } else {
+      agroup->group_size++;
+      agroup->action =
+          realloc(agroup->action, agroup->group_size * sizeof(StitchDelta));
+      agroup->action[agroup->group_size - 1].cell_num = index;
+      agroup->action[agroup->group_size - 1].before_state =
+          grid_data->stitch_data[index];
+      apply_tool_to_cell(app_state, index);
+      agroup->action[agroup->group_size - 1].after_state =
+          grid_data->stitch_data[index];
+    }
   }
 }
 // handles single click events like drawing a color,or drawing a stitch.
@@ -101,6 +134,9 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
   PatternData *grid_data = app_state->pattern;
   GtkWidget *area =
       gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  // StitchData before_state =
+  // grid_data->history_table->group->action->before_state; StitchData
+  // after_state = grid_data->history_table->group->action->after_state;
 
   grid_data->mouse_start_x = start_x;
   grid_data->mouse_start_y = start_y;
@@ -117,7 +153,24 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
   if ((column >= 0 && column < grid_data->width) &&
       (row >= 0 && row < grid_data->height)) {
     int index = (row * grid_data->width) + column;
+    ActionGroup *agroup =
+        &grid_data->history_table
+             ->group[grid_data->history_table->current_position];
+    if (grid_data->history_table->table_size ==
+        grid_data->history_table->current_position) {
+      size_t new_cap = grid_data->history_table->table_size * 2;
+      grid_data->history_table->group = realloc(grid_data->history_table->group,
+                                                new_cap * sizeof(ActionGroup));
+      grid_data->history_table->table_size = new_cap;
+    }
+
+    agroup->action = calloc(1, sizeof(StitchDelta));
+    agroup->group_size++;
+    agroup->action->cell_num = index;
+    agroup->action->before_state = grid_data->stitch_data[index];
     apply_tool_to_cell(app_state, index);
+    agroup->action->after_state = grid_data->stitch_data[index];
+    grid_data->history_table->current_position++;
   }
 }
 

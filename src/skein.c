@@ -39,10 +39,9 @@ static void activate(GtkApplication *app, gpointer user_data) {
   container = create_app_container(pattern_view, toolbar);
 
   // create main window.
-  main_window = create_main_window(app, container);
+  main_window = create_main_window(app, container, app_state);
   app_state->main_window = main_window;
 
-  g_print("Pattern loaded: %d x %d\n", grid->width, grid->height);
   gtk_window_present(GTK_WINDOW(main_window));
 }
 
@@ -53,11 +52,11 @@ int main(int argc, char *argv[]) {
   UiState *ui_state;
 
   // Setup grid.
-  PatternData grid;
+  PatternData *grid = calloc(1, sizeof(PatternData));
 
-  grid.width = 100;
-  grid.height = 100;
-  grid.stitch_size = 30;
+  grid->width = 100;
+  grid->height = 100;
+  grid->stitch_size = 30;
 
   // Allocate memory for AppState.
   master_state = calloc(1, sizeof(AppState));
@@ -67,17 +66,17 @@ int main(int argc, char *argv[]) {
   }
 
   // Allocate memory for the grid.
-  grid.stitch_data = calloc(grid.width * grid.height, sizeof(StitchData));
-  if (grid.stitch_data == NULL) {
+  grid->stitch_data = calloc(grid->width * grid->height, sizeof(StitchData));
+  if (grid->stitch_data == NULL) {
     g_print("Error: stitch data memory allocation failed.");
     return 1;
   }
 
   // Allocate memory for the HistoryTable.
   size_t ht_cap = 10;
-  grid.history_table = calloc(1, sizeof(HistoryTable));
-  grid.history_table->group = calloc(ht_cap, sizeof(ActionGroup));
-  grid.history_table->table_size = ht_cap;
+  grid->history_table = calloc(1, sizeof(HistoryTable));
+  grid->history_table->group = calloc(ht_cap, sizeof(ActionGroup));
+  grid->history_table->table_size = ht_cap;
 
   // Allocate memory for the UiState.
   ui_state = calloc(1, sizeof(UiState));
@@ -92,33 +91,16 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  master_state->pattern = &grid;
+  master_state->pattern = grid;
   master_state->ui = ui_state;
   master_state->ui->pattern_data = master_state->pattern;
 
-  /* DEBUG
-  g_print("Set stitch color to:\n R: %f\n G: %f\n B: %f\n",
-          grid.stitch_data[0].stitch_color.red,
-          grid.stitch_data[0].stitch_color.green,
-          grid.stitch_data[0].stitch_color.blue);
-*/
-  // Calculate the total number of stitches
-  size_t n_stitches = (size_t)grid.width * grid.height;
-
-  // Calculate Total Bytes:
-  // The compiler automatically uses the smaller size (16 bytes) for
-  // sizeof(StitchData)
-  double total_bytes =
-      sizeof(PatternData) + (double)(n_stitches * sizeof(StitchData));
-
-  // Convert to MB
-  g_print("New Setup Memory: %.2f MB\n", total_bytes / 1048576.0);
   // Draw window.
   app = gtk_application_new("com.github.keepo-dot.skein",
                             G_APPLICATION_DEFAULT_FLAGS);
   g_signal_connect(app, "activate", G_CALLBACK(activate), master_state);
   status = g_application_run(G_APPLICATION(app), argc, argv);
-  free(grid.stitch_data);
+  free(grid->stitch_data);
   free(ui_state->toolbar_state);
   free(ui_state);
   free(master_state);

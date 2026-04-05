@@ -1,6 +1,7 @@
 #include "cairo.h"
 #include "gdk/gdk.h"
 #include "glib-object.h"
+#include "glib.h"
 #include "resources.h"
 #include "types.h"
 #include "utils.h"
@@ -17,6 +18,44 @@ static gboolean needs_redraw(GtkWidget *widget, GdkFrameClock *frame_clock,
   }
 
   return G_SOURCE_CONTINUE; // tells gtk to run the function again.
+}
+
+gboolean undo_action(GtkWidget *widget, GVariant *args, gpointer app_state) {
+  AppState *state = (AppState *)app_state;
+  HistoryTable *history_table = state->pattern->history_table;
+  if (history_table->current_position > 0) {
+    ActionGroup *agroup =
+        &history_table->group[history_table->current_position - 1];
+    for (int i = agroup->group_size - 1; i >= 0; i--) {
+      StitchData *data =
+          &state->pattern->stitch_data[agroup->action[i].cell_num];
+      data->stitch_color = agroup->action[i].before_state.stitch_color;
+      data->stitch_type = agroup->action[i].before_state.stitch_type;
+    }
+    history_table->current_position -= 1;
+    state->pattern->redraw = true;
+    return true;
+  }
+  return false;
+}
+
+gboolean redo_action(GtkWidget *widget, GVariant *args, gpointer app_state) {
+  AppState *state = (AppState *)app_state;
+  HistoryTable *history_table = state->pattern->history_table;
+  if (history_table->current_position < history_table->table_size) {
+    ActionGroup *agroup =
+        &history_table->group[history_table->current_position];
+    for (int i = 0; i < agroup->group_size; i++) {
+      StitchData *data =
+          &state->pattern->stitch_data[agroup->action[i].cell_num];
+      data->stitch_color = agroup->action[i].after_state.stitch_color;
+      data->stitch_type = agroup->action[i].after_state.stitch_type;
+    }
+    history_table->current_position += 1;
+    state->pattern->redraw = true;
+    return true;
+  }
+  return false;
 }
 
 static void apply_tool_to_cell(AppState *app_state, int index) {
@@ -134,10 +173,6 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
   PatternData *grid_data = app_state->pattern;
   GtkWidget *area =
       gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-  // StitchData before_state =
-  // grid_data->history_table->group->action->before_state; StitchData
-  // after_state = grid_data->history_table->group->action->after_state;
-
   grid_data->mouse_start_x = start_x;
   grid_data->mouse_start_y = start_y;
 
@@ -153,16 +188,30 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
   if ((column >= 0 && column < grid_data->width) &&
       (row >= 0 && row < grid_data->height)) {
     int index = (row * grid_data->width) + column;
-    ActionGroup *agroup =
-        &grid_data->history_table
-             ->group[grid_data->history_table->current_position];
+
     if (grid_data->history_table->table_size ==
         grid_data->history_table->current_position) {
       size_t new_cap = grid_data->history_table->table_size * 2;
+      if (new_cap == 0) {
+        new_cap = 1;
+      }
       grid_data->history_table->group = realloc(grid_data->history_table->group,
                                                 new_cap * sizeof(ActionGroup));
       grid_data->history_table->table_size = new_cap;
     }
+
+    if (grid_data->history_table->current_position <
+        grid_data->history_table->history_count) {
+      for (size_t i = grid_data->history_table->current_position;
+           i < grid_data->history_table->history_count; i++) {
+        free(grid_data->history_table->group[i].action);
+        grid_data->history_table->group[i].action = NULL;
+        grid_data->history_table->group[i].group_size = 0;
+      }
+    }
+    ActionGroup *agroup =
+        &grid_data->history_table
+             ->group[grid_data->history_table->current_position];
 
     agroup->action = calloc(1, sizeof(StitchDelta));
     agroup->group_size++;
@@ -171,6 +220,7 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
     apply_tool_to_cell(app_state, index);
     agroup->action->after_state = grid_data->stitch_data[index];
     grid_data->history_table->current_position++;
+    grid_data->history_table->history_count++;
   }
 }
 

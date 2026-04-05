@@ -47,6 +47,7 @@ typedef struct {
   size_t table_size;
   ActionGroup *group;
   int current_position;
+  int history_count;
 } HistoryTable;
 
 typedef struct {

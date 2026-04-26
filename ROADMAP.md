@@ -47,7 +47,7 @@
 
 ### Editing Workflow
 
-- [ ] **Undo / Redo**
+- [x] **Undo / Redo**
   - The single most critical feature for user retention.
 - [ ] **Selection Tool**
   - Select a rectangle of cells to Move, Copy, or Delete.

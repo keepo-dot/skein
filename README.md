@@ -43,7 +43,7 @@ This project was built to showcase manual memory management, modular C architect
 
 * **File Persistence:** Save and load your work to a custom JSON format (`.skn`) via `json-glib`, using modern asynchronous native GTK file dialogs.
 * **Visual Feedback & Sanity Checks:** Integrated alert dialogs confirm successful save and load operations. The app proactively warns you if you attempt to save an empty canvas to prevent accidental file overwriting.
-* **Memory Safe:** Thoroughly tested with AddressSanitizer (ASan) to ensure zero memory leaks during intensive file I/O, canvas manipulation, and JSON serialization.
+* **Memory Safe:** Thoroughly tested with AddressSanitizer (ASan) to ensure zero memory leaks during intensive file I/O, canvas manipulation, and JSON serialization, as well as user undos and redos.
 
 ## Dependencies
 

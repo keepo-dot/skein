@@ -209,11 +209,13 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
     if (grid_data->history_table->current_position <
         grid_data->history_table->history_count) {
       for (size_t i = grid_data->history_table->current_position;
-           i < grid_data->history_table->history_count - 1; i++) {
+           i < grid_data->history_table->history_count; i++) {
         free(grid_data->history_table->group[i].action);
         grid_data->history_table->group[i].action = NULL;
         grid_data->history_table->group[i].group_size = 0;
       }
+      grid_data->history_table->history_count =
+          grid_data->history_table->current_position;
     }
     ActionGroup *agroup =
         &grid_data->history_table

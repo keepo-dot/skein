@@ -24,9 +24,12 @@ This project was built to showcase manual memory management, modular C architect
 ### Core Capabilities
 
 * **Vector-Based Rendering:** Patterns are rendered using Cairo for crisp, lossless scaling at any zoom level. No pixelation, no matter how large the chart gets.
+* **Infinite Undo/Redo:** A robust history management system utilizing a stack-based architecture (`HistoryTable`) to track every modification to the grid. (Well, as infinite as your RAM.)
 * **Dual-Layer Editing:** Support for distinct "Yarn Color" (background layer) and "Stitch Type" (foreground symbol layer) to accurately represent complex knitting techniques.
 * **Smart Contrast:** Stitch symbols automatically calculate the luminance of the underlying yarn color and dynamically switch between black and white to ensure maximum readability.
-* **Infinite Navigation:** `Ctrl + Scroll` to zoom and click-and-drag panning support for navigating massive, multi-page pattern grids.
+* **Navigation:** `Ctrl + Scroll` to zoom and click-and-drag panning support for navigating massive, multi-page pattern grids.
+
+* **
 
 ### Tools & Modes
 
@@ -101,7 +104,7 @@ Skein utilizes a pragmatic, highly modular C architecture designed for separatio
 
 * **include/ (`.h` files):** Contains all headers mapping the project's data structures (`types.h`) and public function signatures. `AppState` tracks the main window for global access by asynchronous dialogs.
 * **src/skein.c & src/skein_window.c:** The application entry points. Initializes the `GtkApplication`, manages the main window shell, layout packing, and memory allocation.
-* **src/canvas.c:** High-performance grid rendering. Implements viewport culling (only drawing what is visible on screen) and translates user input into Paint, Erase, and Picker actions.
+* **src/canvas.c:** High-performance grid rendering. Implements viewport culling (only drawing what is visible on screen) and translates user input into Paint, Erase, and Picker actions. Also implements logic for history tracking for the Undo/Redo stack.
 * **src/toolbar.c:** Handles the creation of the tool sidebar, button states, and triggers UI interactions.
 * **src/utils.c:** The heavy-lifting utility module. Manages asynchronous JSON File I/O, serialization/deserialization, UI dialog generation, empty-canvas safety validations, and dynamic vector rendering.
 * **src/resources.c:** Stores static configurations, including arrays for the toolbar buttons, global color palettes, and stitch symbol definitions.
@@ -112,23 +115,24 @@ Skein is actively being developed with a focus on becoming a complete pattern-dr
 
 **Quality of Life & Editing Workflow:**
 
-* Undo/Redo stack (Highest priority).
-* Selection Tool and internal Copy/Paste for duplicating motifs.
-* Export grid to Image (`.PNG`/`.JPG`) and PDF Print Layouts.
-* Keyboard shortcuts (e.g., `B` for Brush, `Spacebar` to pan, `Ctrl+Z` to undo).
+* [x] Undo/Redo stack (Highest priority).
+* [ ] Selection Tool and internal Copy/Paste for duplicating motifs.
+* [ ] Export grid to Image (`.PNG`/`.JPG`) and PDF Print Layouts.
+* [ ] Keyboard shortcuts (e.g., `B` for Brush, `Spacebar` to pan, `Ctrl+Z` to undo).
 
 **Knitting-Specific Advanced Features:**
 
-* **Written Instruction Generation:** Automatically generate standardized knitting text (e.g., "Row 1: K2, P2, K2...") directly from the visual grid state.
-* **"Wrong Side" Logic:** Toggle between "Chart View" (always looking from the front) and "Flat View" (showing purls as they are actually worked on the wrong side).
-* **Fair Isle Checker:** An algorithmic warning tool that highlights color floats that are too long for practical knitting.
-* **Gauge Calculator & Repeats:** Input stitches-per-inch to see real-world dimensions and mark bounding boxes for repeating sections.
+*[ ] **Written Instruction Generation:** Automatically generate standardized knitting text (e.g., "Row 1: K2, P2, K2...") directly from the visual grid state.
+
+* [ ] **"Wrong Side" Logic:** Toggle between "Chart View" (always looking from the front) and "Flat View" (showing purls as they are actually worked on the wrong side).
+* [ ] **Fair Isle Checker:** An algorithmic warning tool that highlights color floats that are too long for practical knitting.
+* [ ] **Gauge Calculator & Repeats:** Input stitches-per-inch to see real-world dimensions and mark bounding boxes for repeating sections.
 
 **Community & Cloud:**
 
-* Custom Stitch Dictionary (allow users to define and draw their own symbols, like complex cables).
-* Save/Load custom color palettes.
-* Ravelry API integration for pattern fetching.
+* [ ] Custom Stitch Dictionary (allow users to define and draw their own symbols, like complex cables).
+* [ ] Save/Load custom color palettes.
+* [ ] Ravelry API integration for pattern fetching.
 
 *See [ROADMAP.md](/ROADMAP.md) for the full, detailed feature pipeline.*
 

@@ -122,7 +122,7 @@ Skein is actively being developed with a focus on becoming a complete pattern-dr
 
 **Knitting-Specific Advanced Features:**
 
-*[ ] **Written Instruction Generation:** Automatically generate standardized knitting text (e.g., "Row 1: K2, P2, K2...") directly from the visual grid state.
+* [ ] **Written Instruction Generation:** Automatically generate standardized knitting text (e.g., "Row 1: K2, P2, K2...") directly from the visual grid state.
 
 * [ ] **"Wrong Side" Logic:** Toggle between "Chart View" (always looking from the front) and "Flat View" (showing purls as they are actually worked on the wrong side).
 * [ ] **Fair Isle Checker:** An algorithmic warning tool that highlights color floats that are too long for practical knitting.

@@ -150,7 +150,9 @@ static void on_drag_update(GtkGestureDrag *gesture, double offset_x,
     ActionGroup *agroup =
         &grid_data->history_table
              ->group[grid_data->history_table->current_position - 1];
-    if (index == agroup->action[agroup->group_size - 1].cell_num) {
+
+    if (agroup->group_size > 0 &&
+        index == agroup->action[agroup->group_size - 1].cell_num) {
       return;
     } else {
       agroup->group_size++;
@@ -197,13 +199,17 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
       }
       grid_data->history_table->group = realloc(grid_data->history_table->group,
                                                 new_cap * sizeof(ActionGroup));
+      for (size_t i = grid_data->history_table->table_size; i < new_cap; i++) {
+        grid_data->history_table->group[i].group_size = 0;
+        grid_data->history_table->group[i].action = NULL;
+      }
       grid_data->history_table->table_size = new_cap;
     }
 
     if (grid_data->history_table->current_position <
         grid_data->history_table->history_count) {
       for (size_t i = grid_data->history_table->current_position;
-           i < grid_data->history_table->history_count; i++) {
+           i < grid_data->history_table->history_count - 1; i++) {
         free(grid_data->history_table->group[i].action);
         grid_data->history_table->group[i].action = NULL;
         grid_data->history_table->group[i].group_size = 0;

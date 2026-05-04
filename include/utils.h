@@ -4,7 +4,8 @@
 #include "types.h"
 #include <gtk/gtk.h>
 #include <json-glib-1.0/json-glib/json-glib.h>
-
+void draw_repeat_outlines(GtkDrawingArea *area, cairo_t *cr, int w, int h,
+                          gpointer user_data);
 void draw_color_swatch(GtkDrawingArea *area, cairo_t *cr, int w, int h,
                        gpointer button_color);
 void draw_stitch_swatch(GtkDrawingArea *area, cairo_t *cr, int w, int h,

@@ -3,6 +3,35 @@
 #include <gtk/gtk.h>
 #include <json-glib-1.0/json-glib/json-glib.h>
 
+void draw_repeat_outlines(GtkDrawingArea *area, cairo_t *cr, int w, int h,
+                          gpointer user_data) {
+  AppState *app_state = (AppState *)user_data;
+  RepeatTable *repeat_table = app_state->pattern->repeat_table;
+  GdkRGBA repeat_color;
+
+  repeat_color.red = 0.96;
+  repeat_color.green = 0.84;
+  repeat_color.blue = 0.15;
+  repeat_color.alpha = 1;
+
+  gdk_cairo_set_source_rgba(cr, &repeat_color);
+
+  for (size_t i = 0; i < repeat_table->num_repeats; i++) {
+    double stitch_size = app_state->pattern->stitch_size;
+    int num_rows = (repeat_table->repeat_section[i].end_row -
+                    repeat_table->repeat_section[i].start_row) +
+                   1;
+    int outline_start_pos = 0 - app_state->pattern->camera_x;
+    int outline_end_pos =
+        (repeat_table->repeat_section[i].start_row * stitch_size) -
+        app_state->pattern->camera_y;
+    cairo_rectangle(cr, outline_start_pos, outline_end_pos,
+                    stitch_size * app_state->pattern->width,
+                    stitch_size * num_rows);
+    cairo_stroke(cr);
+  }
+}
+
 void draw_color_swatch(GtkDrawingArea *area, cairo_t *cr, int w, int h,
                        gpointer button_color) {
   GdkRGBA *paint_color = (GdkRGBA *)button_color;

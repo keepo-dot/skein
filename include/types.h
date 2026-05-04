@@ -24,6 +24,7 @@ typedef enum {
   MODE_NEWFILE,
   MODE_SAVEFILE,
   MODE_LOADFILE,
+  MODE_REPEAT,
   NUM_TOOLS,
 } ToolbarMode;
 
@@ -51,6 +52,17 @@ typedef struct {
 } HistoryTable;
 
 typedef struct {
+  int start_row;
+  int end_row;
+} RepeatSection;
+
+typedef struct {
+  size_t table_size;
+  int num_repeats;
+  RepeatSection *repeat_section;
+} RepeatTable;
+
+typedef struct {
   int width;               // X stitches wide.
   int height;              // Y rows high.
   StitchData *stitch_data; // What's actually IN the objects in the grid.
@@ -63,6 +75,9 @@ typedef struct {
   double mouse_start_y;    // mouse start y pos.
   int stitch_size;
   HistoryTable *history_table;
+  RepeatTable *repeat_table;
+  int temp_repeat_start;
+  int temp_repeat_end;
 } PatternData;
 
 typedef struct {
@@ -84,6 +99,7 @@ typedef struct {
   GdkRGBA active_color;
   StitchType active_stitch;
   GtkWidget *active_button;
+  bool is_drawing_repeat;
 } ToolbarState;
 
 typedef struct {

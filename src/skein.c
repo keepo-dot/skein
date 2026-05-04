@@ -19,6 +19,8 @@
 #include "toolbar.h"
 #include "types.h"
 #include <gtk/gtk.h>
+#include <stddef.h>
+#include <stdlib.h>
 
 static void activate(GtkApplication *app, gpointer user_data) {
   GtkWidget *main_window;
@@ -77,6 +79,12 @@ int main(int argc, char *argv[]) {
   grid->history_table = calloc(1, sizeof(HistoryTable));
   grid->history_table->group = calloc(ht_cap, sizeof(ActionGroup));
   grid->history_table->table_size = ht_cap;
+
+  // Allocate memory for the RepeatTable.
+  size_t rt_cap = 5;
+  grid->repeat_table = calloc(rt_cap, sizeof(RepeatTable));
+  grid->repeat_table->repeat_section = calloc(rt_cap, sizeof(RepeatSection));
+  grid->repeat_table->table_size = rt_cap;
 
   // Allocate memory for the UiState.
   ui_state = calloc(1, sizeof(UiState));

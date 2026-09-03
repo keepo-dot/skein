@@ -22,7 +22,7 @@ extern const GdkRGBA COLOR_EMPTY;
 
 // toolbar data arrays.
 extern ButtonInfo toolbar_buttons_mode[];
-#define MODE_BUTTON_COUNT 5
+#define MODE_BUTTON_COUNT 6
 extern ButtonInfo toolbar_buttons_color[];
 #define COLOR_BUTTON_COUNT 7
 extern ButtonInfo toolbar_buttons_stitch_type[];

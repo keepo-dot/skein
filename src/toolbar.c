@@ -169,6 +169,8 @@ static void on_tool_toggled(GtkToggleButton *button, gpointer toolbar_state) {
       break;
     case MODE_ERASE:
     case MODE_PICKER:
+    case MODE_REPEAT:
+
     default:
       gtk_widget_set_visible(state->palette_container, false);
       gtk_widget_set_visible(state->stitch_type_container, false);
@@ -235,6 +237,7 @@ static void on_color_rc(GtkGestureClick *rc_listener, gint n_press, gdouble x,
   gtk_color_dialog_choose_rgba(color_dialog, GTK_WINDOW(main_window),
                                button_color, NULL, on_color_selection,
                                listener_widget);
+  AppState *app_state = state;
 }
 
 static GtkWidget *toggle_button_group_new(

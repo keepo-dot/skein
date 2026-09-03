@@ -29,7 +29,9 @@ ButtonInfo toolbar_buttons_mode[] = {
     {"Color Picker", "color-picker-symbolic", STITCH_EMPTY, MODE_PICKER, NULL,
      GINT_TO_POINTER(MODE_PICKER), 1},
     {"Stitch Type", "view-grid-symbolic", STITCH_EMPTY, MODE_STITCH, NULL,
-     GINT_TO_POINTER(MODE_STITCH), 1}};
+     GINT_TO_POINTER(MODE_STITCH), 1},
+    {"Repeat", "view-refresh-symbolic", STITCH_EMPTY, MODE_REPEAT, NULL,
+     GINT_TO_POINTER(MODE_REPEAT), 1}};
 
 ButtonInfo toolbar_buttons_color[] = {
     {"Red", NULL, STITCH_EMPTY, MODE_COLOR, &COLOR_RED, (gpointer)&COLOR_RED,

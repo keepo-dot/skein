@@ -106,44 +106,63 @@ static void apply_tool_to_cell(AppState *app_state, int index) {
 // handles release events.
 static void on_drag_end(GtkGestureDrag *gesture, double offset_x,
                         double offset_y, AppState *app_state) {
-  ToolbarState *toolbar_state = app_state->ui->toolbar_state;
-  PatternData *pattern_data = app_state->pattern;
-  HistoryTable *history = app_state->pattern->history_table;
-  RepeatTable *repeat_table = app_state->pattern->repeat_table;
-  StitchDelta *first_delta =
-      &history->group[history->current_position - 1].action[0];
-  GdkRGBA before_color = first_delta->before_state.stitch_color;
-  GdkRGBA after_color = first_delta->after_state.stitch_color;
-  if (before_color.red == after_color.red &&
-      before_color.green == after_color.green &&
-      before_color.blue == after_color.blue &&
-      before_color.alpha == after_color.alpha &&
-      first_delta->before_state.stitch_type ==
-          first_delta->after_state.stitch_type) {
-    history->current_position -= 1;
-    free(history->group[history->current_position - 1].action);
-  }
-  if (toolbar_state && toolbar_state->active_mode == MODE_REPEAT) {
-    toolbar_state->is_drawing_repeat = false;
-    if (repeat_table->num_repeats >= repeat_table->table_size) {
-      size_t new_cap = (repeat_table->table_size * 2);
-      if (new_cap == 0) {
-        new_cap = 1;
+  g_print("1. Entered on_drag_end\n");
+  PatternData *grid_data = app_state->pattern;
+  int column = (int)((grid_data->mouse_start_x + grid_data->camera_x) /
+                     app_state->pattern->stitch_size);
+  int row = (int)((grid_data->mouse_start_y + grid_data->camera_y) /
+                  app_state->pattern->stitch_size);
+
+  if ((column >= 0 && column < grid_data->width) &&
+      (row >= 0 && row < grid_data->height)) {
+    ToolbarState *toolbar_state = app_state->ui->toolbar_state;
+    PatternData *pattern_data = app_state->pattern;
+    HistoryTable *history = app_state->pattern->history_table;
+    RepeatTable *repeat_table = app_state->pattern->repeat_table;
+    StitchDelta *first_delta =
+        &history->group[history->current_position - 1].action[0];
+    GdkRGBA before_color = first_delta->before_state.stitch_color;
+    GdkRGBA after_color = first_delta->after_state.stitch_color;
+
+    if (toolbar_state && toolbar_state->active_mode == MODE_REPEAT) {
+      toolbar_state->is_drawing_repeat = false;
+      if (repeat_table->num_repeats >= repeat_table->table_size) {
+        size_t new_cap = (repeat_table->table_size * 2);
+        if (new_cap == 0) {
+          new_cap = 1;
+        }
+        repeat_table->repeat_section = realloc(repeat_table->repeat_section,
+                                               new_cap * sizeof(RepeatSection));
+        for (size_t i = repeat_table->table_size; i < new_cap; i++) {
+          repeat_table->repeat_section[i].start_row = 0;
+          repeat_table->repeat_section[i].end_row = 0;
+        }
+        repeat_table->table_size = new_cap;
       }
-      repeat_table->repeat_section = realloc(repeat_table->repeat_section,
-                                             new_cap * sizeof(RepeatSection));
-      for (size_t i = repeat_table->table_size; i < new_cap; i++) {
-        repeat_table->repeat_section[i].start_row = 0;
-        repeat_table->repeat_section[i].end_row = 0;
-      }
-      repeat_table->table_size = new_cap;
+      repeat_table->repeat_section[repeat_table->num_repeats].start_row =
+          pattern_data->temp_repeat_start;
+      repeat_table->repeat_section[repeat_table->num_repeats].end_row =
+          pattern_data->temp_repeat_end;
+      repeat_table->num_repeats++;
+      pattern_data->redraw = true;
     }
-    repeat_table->repeat_section[repeat_table->num_repeats].start_row =
-        pattern_data->temp_repeat_start;
-    repeat_table->repeat_section[repeat_table->num_repeats].end_row =
-        pattern_data->temp_repeat_end;
-    repeat_table->num_repeats++;
-    pattern_data->redraw = true;
+    if (!(toolbar_state->active_mode == MODE_STITCH ||
+          toolbar_state->active_mode == MODE_PAINT)) {
+      if (before_color.red == after_color.red &&
+          before_color.green == after_color.green &&
+          before_color.blue == after_color.blue &&
+          before_color.alpha == after_color.alpha &&
+          first_delta->before_state.stitch_type ==
+              first_delta->after_state.stitch_type) {
+        free(history->group[history->current_position - 1].action);
+        history->group[history->current_position - 1].action = NULL;
+        history->current_position -= 1;
+        history->history_count -= 1;
+      }
+    }
+
+    g_print("2. Reached end of on_drag_end. Count is now: %zu\n",
+            repeat_table->num_repeats);
   }
 }
 
@@ -413,6 +432,8 @@ GtkWidget *create_pattern_view(AppState *app_state) {
   g_signal_connect(mouse_drag_event, "drag-update", G_CALLBACK(on_drag_update),
                    app_state);
   g_signal_connect(mouse_scroll_event, "scroll", G_CALLBACK(on_scroll),
+                   app_state);
+  g_signal_connect(mouse_drag_event, "drag-end", G_CALLBACK(on_drag_end),
                    app_state);
   gtk_widget_add_controller(area, GTK_EVENT_CONTROLLER(mouse_drag_event));
   gtk_widget_add_controller(area, GTK_EVENT_CONTROLLER(mouse_scroll_event));

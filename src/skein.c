@@ -15,9 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "canvas.h"
+#include "gdk-pixbuf/gdk-pixbuf.h"
+#include "glib-object.h"
 #include "skein_window.h"
 #include "toolbar.h"
 #include "types.h"
+#include "utils.h"
 #include <gtk/gtk.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -29,9 +32,11 @@ static void activate(GtkApplication *app, gpointer user_data) {
   GtkWidget *container;
   GtkWidget *toolbar;
   AppState *app_state;
+  UiState *ui_state;
 
   // give activate the master state.
   app_state = (AppState *)user_data;
+  ui_state = app_state->ui;
   grid = app_state->pattern;
   // create the toolbar.
   toolbar = create_toolbar(app_state);
@@ -43,6 +48,20 @@ static void activate(GtkApplication *app, gpointer user_data) {
   // create main window.
   main_window = create_main_window(app, container, app_state);
   app_state->main_window = main_window;
+
+  // Load resources into memory to avoid repeated disk hits on drawing.
+  GError *error = NULL;
+  int scale = gtk_widget_get_scale_factor(main_window);
+  GdkPixbuf *repeat_icon =
+      fetch_icon("refresh-view-symbolic", 100, 100, scale, TRUE, &error);
+  if (!repeat_icon) {
+    printf("Error fetching icon: %s", error->message);
+    return;
+  }
+  GdkTexture *r_icon_tex = gdk_texture_new_for_pixbuf(repeat_icon);
+  ui_state->repeat_icon = r_icon_tex;
+  g_object_unref(r_icon_tex);
+  g_object_unref(repeat_icon);
 
   gtk_window_present(GTK_WINDOW(main_window));
 }

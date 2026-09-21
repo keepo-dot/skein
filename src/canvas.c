@@ -7,7 +7,10 @@
 #include "utils.h"
 #include <gtk/gtk.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
 
 // checks if grid needs redrawn, if so, calls a redraw.
 static gboolean needs_redraw(GtkWidget *widget, GdkFrameClock *frame_clock,
@@ -21,42 +24,87 @@ static gboolean needs_redraw(GtkWidget *widget, GdkFrameClock *frame_clock,
 
   return G_SOURCE_CONTINUE; // tells gtk to run the function again.
 }
-
+/* TODO: disable GTK thread bullshit while undo is running so I can sleep undo.
+ * so like
+ *  undo {
+ * disable gtk crap //because race crap
+ * do undo stuff
+ * enable  gtk crap
+ * return 1
+ *
+ * enable gtk crap
+ * return error
+ * }
+ * kinda structure */
 gboolean undo_action(GtkWidget *widget, GVariant *args, gpointer app_state) {
   AppState *state = (AppState *)app_state;
   HistoryTable *history_table = state->pattern->history_table;
-  if (history_table->current_position > 0) {
-    ActionGroup *agroup =
-        &history_table->group[history_table->current_position - 1];
-    for (int i = agroup->group_size - 1; i >= 0; i--) {
-      StitchData *data =
-          &state->pattern->stitch_data[agroup->action[i].cell_num];
-      data->stitch_color = agroup->action[i].before_state.stitch_color;
-      data->stitch_type = agroup->action[i].before_state.stitch_type;
+  RepeatTable *repeat_table = state->pattern->repeat_table;
+  if (history_table->current_position <= 0) {
+    return false;
+  }
+  switch (
+      history_table->group[history_table->current_position - 1].action_type) {
+  case ACTION_STITCH_EDIT:
+    if (history_table->current_position > 0) {
+      ActionGroup *agroup =
+          &history_table->group[history_table->current_position - 1];
+      for (int i = agroup->group_size - 1; i >= 0; i--) {
+        StitchData *data =
+            &state->pattern->stitch_data[agroup->action[i].cell_num];
+        data->stitch_color = agroup->action[i].before_state.stitch_color;
+        data->stitch_type = agroup->action[i].before_state.stitch_type;
+      }
+      history_table->current_position -= 1;
+      state->pattern->redraw = true;
+      return true;
     }
-    history_table->current_position -= 1;
+  case ACTION_REPEAT_ADD:
+    if (repeat_table->num_repeats <= 0) {
+      return false;
+    }
+    repeat_table->num_repeats--;
+    history_table->current_position--;
     state->pattern->redraw = true;
     return true;
+  default:
+    return false;
   }
+
   return false;
 }
 
 gboolean redo_action(GtkWidget *widget, GVariant *args, gpointer app_state) {
   AppState *state = (AppState *)app_state;
   HistoryTable *history_table = state->pattern->history_table;
-  if (history_table->current_position < history_table->table_size) {
-    ActionGroup *agroup =
-        &history_table->group[history_table->current_position];
-    for (int i = 0; i < agroup->group_size; i++) {
-      StitchData *data =
-          &state->pattern->stitch_data[agroup->action[i].cell_num];
-      data->stitch_color = agroup->action[i].after_state.stitch_color;
-      data->stitch_type = agroup->action[i].after_state.stitch_type;
+  RepeatTable *repeat_table = state->pattern->repeat_table;
+  switch (history_table->group[history_table->current_position].action_type) {
+  case ACTION_STITCH_EDIT:
+    if (history_table->current_position < history_table->table_size) {
+      ActionGroup *agroup =
+          &history_table->group[history_table->current_position];
+      for (int i = 0; i < agroup->group_size; i++) {
+        StitchData *data =
+            &state->pattern->stitch_data[agroup->action[i].cell_num];
+        data->stitch_color = agroup->action[i].after_state.stitch_color;
+        data->stitch_type = agroup->action[i].after_state.stitch_type;
+      }
+      history_table->current_position += 1;
+      state->pattern->redraw = true;
+      return true;
     }
-    history_table->current_position += 1;
+  case ACTION_REPEAT_ADD:
+    if (repeat_table->num_repeats < 0) {
+      return false;
+    }
+    repeat_table->num_repeats++;
+    history_table->current_position++;
     state->pattern->redraw = true;
     return true;
+  default:
+    break;
   }
+
   return false;
 }
 
@@ -144,7 +192,12 @@ static void on_drag_end(GtkGestureDrag *gesture, double offset_x,
       repeat_table->repeat_section[repeat_table->num_repeats].end_row =
           pattern_data->temp_repeat_end;
       repeat_table->num_repeats++;
+      history->group[history->current_position - 1].action_type =
+          ACTION_REPEAT_ADD;
+      history->group[history->current_position - 1].group_size = 0;
+      history->group[history->current_position - 1].action = NULL;
       pattern_data->redraw = true;
+      return;
     }
     if (!(toolbar_state->active_mode == MODE_STITCH ||
           toolbar_state->active_mode == MODE_PAINT)) {
@@ -160,9 +213,6 @@ static void on_drag_end(GtkGestureDrag *gesture, double offset_x,
         history->history_count -= 1;
       }
     }
-
-    g_print("2. Reached end of on_drag_end. Count is now: %zu\n",
-            repeat_table->num_repeats);
   }
 }
 
@@ -206,6 +256,7 @@ static void on_drag_update(GtkGestureDrag *gesture, double offset_x,
       return;
     } else {
       agroup->group_size++;
+      agroup->action_type = ACTION_STITCH_EDIT;
       agroup->action =
           realloc(agroup->action, agroup->group_size * sizeof(StitchDelta));
       agroup->action[agroup->group_size - 1].cell_num = index;
@@ -259,6 +310,7 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
       for (size_t i = grid_data->history_table->table_size; i < new_cap; i++) {
         grid_data->history_table->group[i].group_size = 0;
         grid_data->history_table->group[i].action = NULL;
+        grid_data->history_table->group[i].action_type = 0;
       }
       grid_data->history_table->table_size = new_cap;
     }
@@ -279,7 +331,8 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
              ->group[grid_data->history_table->current_position];
 
     agroup->action = calloc(1, sizeof(StitchDelta));
-    agroup->group_size++;
+    agroup->group_size = 1;
+    agroup->action_type = ACTION_STITCH_EDIT;
     agroup->action->cell_num = index;
     agroup->action->before_state = grid_data->stitch_data[index];
     apply_tool_to_cell(app_state, index);

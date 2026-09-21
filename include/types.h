@@ -28,6 +28,12 @@ typedef enum {
   NUM_TOOLS,
 } ToolbarMode;
 
+typedef enum {
+  ACTION_NONE,
+  ACTION_STITCH_EDIT,
+  ACTION_REPEAT_ADD,
+} ActionType;
+
 typedef struct {
   GdkRGBA stitch_color;   // color value
   StitchType stitch_type; // type of stitch.
@@ -42,6 +48,7 @@ typedef struct {
 typedef struct {
   size_t group_size;
   StitchDelta *action;
+  ActionType action_type;
 } ActionGroup;
 
 typedef struct {

@@ -55,6 +55,7 @@ void draw_repeat_outlines(GtkDrawingArea *area, cairo_t *cr, int w, int h,
 
   if (repeat_table->num_repeats == 0)
     return;
+  // draw repeat outline
   cairo_set_line_width(cr, 3.0);
   GdkRGBA repeat_color = {0.96, 0.84, 0.15, 1.0};
   gdk_cairo_set_source_rgba(cr, &repeat_color);
@@ -71,6 +72,14 @@ void draw_repeat_outlines(GtkDrawingArea *area, cairo_t *cr, int w, int h,
     double rect_h = stitch_size * num_rows;
     cairo_rectangle(cr, x_pos, y_pos, rect_w, rect_h);
     cairo_stroke(cr);
+    // draw icon in top right corner.
+    double r_edge =
+        (app_state->pattern->width * app_state->pattern->stitch_size) -
+        app_state->pattern->camera_x;
+    double icon_w = r_edge - gdk_pixbuf_get_width(app_state->ui->repeat_icon);
+    gdk_cairo_set_source_pixbuf(cr, GDK_PIXBUF(app_state->ui->repeat_icon),
+                                icon_w, y_pos);
+    cairo_paint(cr);
   }
 }
 

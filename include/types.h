@@ -114,7 +114,7 @@ typedef struct {
   ToolbarState *toolbar_state;
   double offset_x;
   double offset_y;
-  GdkTexture *repeat_icon;
+  GdkPixbuf *repeat_icon;
 } UiState;
 
 typedef struct {

@@ -53,15 +53,14 @@ static void activate(GtkApplication *app, gpointer user_data) {
   GError *error = NULL;
   int scale = gtk_widget_get_scale_factor(main_window);
   GdkPixbuf *repeat_icon =
-      fetch_icon("refresh-view-symbolic", 100, 100, scale, TRUE, &error);
+      fetch_icon("view-refresh-symbolic", grid->stitch_size * 0.7,
+                 grid->stitch_size * 0.7, scale, TRUE, &error);
   if (!repeat_icon) {
     printf("Error fetching icon: %s", error->message);
     return;
   }
-  GdkTexture *r_icon_tex = gdk_texture_new_for_pixbuf(repeat_icon);
-  ui_state->repeat_icon = r_icon_tex;
-  g_object_unref(r_icon_tex);
-  g_object_unref(repeat_icon);
+  // GdkTexture *r_icon_tex = gdk_texture_new_for_pixbuf(repeat_icon);
+  ui_state->repeat_icon = repeat_icon;
 
   gtk_window_present(GTK_WINDOW(main_window));
 }

@@ -56,10 +56,10 @@ void draw_repeat_outlines(GtkDrawingArea *area, cairo_t *cr, int w, int h,
   if (repeat_table->num_repeats == 0)
     return;
   // draw repeat outline
-  cairo_set_line_width(cr, 3.0);
-  GdkRGBA repeat_color = {0.96, 0.84, 0.15, 1.0};
-  gdk_cairo_set_source_rgba(cr, &repeat_color);
   for (size_t i = 0; i < repeat_table->num_repeats; i++) {
+    cairo_set_line_width(cr, 3.0);
+    GdkRGBA repeat_color = {0.96, 0.84, 0.15, 1.0};
+    gdk_cairo_set_source_rgba(cr, &repeat_color);
     double stitch_size = app_state->pattern->stitch_size;
     int s_row = repeat_table->repeat_section[i].start_row;
     int e_row = repeat_table->repeat_section[i].end_row;

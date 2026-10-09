@@ -2,6 +2,7 @@
 #include "gdk/gdk.h"
 #include "glib-object.h"
 #include "glib.h"
+#include "glibconfig.h"
 #include "resources.h"
 #include "types.h"
 #include "utils.h"
@@ -381,6 +382,30 @@ static gboolean on_scroll(GtkEventControllerScroll *controller, double dx,
   app_state->pattern->redraw = true;
   return TRUE;
 }
+
+static gboolean on_motion(GtkEventControllerMotion *controller, double mx,
+                          double my, AppState *app_state) {
+  UiState *ui_state = app_state->ui;
+  PatternData *grid_data = app_state->pattern;
+  RepeatTable *repeat_table = app_state->pattern->repeat_table;
+  int hover_row = (int)((my + grid_data->camera_y) / grid_data->stitch_size);
+  int current_hit = -1;
+  for (int i = 0; i < app_state->pattern->repeat_table->num_repeats; i++) {
+    int s_row = repeat_table->repeat_section[i].start_row;
+    int e_row = repeat_table->repeat_section[i].end_row;
+    int top_row = (s_row < e_row) ? s_row : e_row;
+    int bottom_row = (s_row < e_row) ? e_row : s_row;
+    if (hover_row <= bottom_row && hover_row >= top_row) {
+      current_hit = i;
+      break;
+    }
+  }
+  if (current_hit != ui_state->hovered_repeat_index) {
+    ui_state->hovered_repeat_index = current_hit;
+    grid_data->redraw = true;
+  }
+  return TRUE;
+}
 // draws the grid lines and fills the square colors and handles grid
 // transaltion. uses cairo.
 static void draw_grid(GtkDrawingArea *area, cairo_t *cr, int width, int height,
@@ -480,6 +505,7 @@ GtkWidget *create_pattern_view(AppState *app_state) {
   GtkGesture *mouse_drag_event = gtk_gesture_drag_new();
   GtkEventController *mouse_scroll_event =
       gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);
+  GtkEventController *mouse_motion_event = gtk_event_controller_motion_new();
   g_signal_connect(mouse_drag_event, "drag-begin", G_CALLBACK(on_drag_begin),
                    app_state);
   g_signal_connect(mouse_drag_event, "drag-update", G_CALLBACK(on_drag_update),
@@ -488,8 +514,11 @@ GtkWidget *create_pattern_view(AppState *app_state) {
                    app_state);
   g_signal_connect(mouse_drag_event, "drag-end", G_CALLBACK(on_drag_end),
                    app_state);
+  g_signal_connect(mouse_motion_event, "motion", G_CALLBACK(on_motion),
+                   app_state);
   gtk_widget_add_controller(area, GTK_EVENT_CONTROLLER(mouse_drag_event));
   gtk_widget_add_controller(area, GTK_EVENT_CONTROLLER(mouse_scroll_event));
+  gtk_widget_add_controller(area, GTK_EVENT_CONTROLLER(mouse_motion_event));
   gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(area), draw_grid, app_state,
                                  NULL);
 

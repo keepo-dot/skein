@@ -115,6 +115,7 @@ typedef struct {
   double offset_x;
   double offset_y;
   GdkPixbuf *repeat_icon;
+  int hovered_repeat_index;
 } UiState;
 
 typedef struct {

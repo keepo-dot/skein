@@ -1,3 +1,4 @@
+#include "cairo.h"
 #include "gdk-pixbuf/gdk-pixbuf.h"
 #include "gdk/gdk.h"
 #include "gio/gio.h"
@@ -57,9 +58,15 @@ void draw_repeat_outlines(GtkDrawingArea *area, cairo_t *cr, int w, int h,
     return;
   // draw repeat outline
   for (size_t i = 0; i < repeat_table->num_repeats; i++) {
-    cairo_set_line_width(cr, 3.0);
-    GdkRGBA repeat_color = {0.96, 0.84, 0.15, 1.0};
-    gdk_cairo_set_source_rgba(cr, &repeat_color);
+    if (i == app_state->ui->hovered_repeat_index) {
+      cairo_set_line_width(cr, 4.0);
+      GdkRGBA hover_color = {0.85, 0.55, 0.20, 1.0};
+      gdk_cairo_set_source_rgba(cr, &hover_color);
+    } else {
+      cairo_set_line_width(cr, 3.0);
+      GdkRGBA repeat_color = {0.96, 0.84, 0.15, 1.0};
+      gdk_cairo_set_source_rgba(cr, &repeat_color);
+    }
     double stitch_size = app_state->pattern->stitch_size;
     int s_row = repeat_table->repeat_section[i].start_row;
     int e_row = repeat_table->repeat_section[i].end_row;

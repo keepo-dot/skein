@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 void pattern_json_load(char *filename, PatternData *current_canvas) {
+  RepeatTable *repeat_table = current_canvas->repeat_table;
   GError *error = NULL;
   JsonParser *parser = json_parser_new();
   json_parser_load_from_file(parser, filename, &error);
@@ -90,6 +91,38 @@ void pattern_json_load(char *filename, PatternData *current_canvas) {
   }
 
   json_reader_end_member(reader);
+  // load repeat table.
+  int num_repeats;
+  if (json_reader_read_member(reader, "repeat_table")) {
+
+    json_reader_read_member(reader, "num_repeats");
+    num_repeats = json_reader_get_int_value(reader);
+    json_reader_end_member(reader);
+    // resize repeat_table if needed, then wipe data to rid old repeats
+    current_canvas->repeat_table->num_repeats = num_repeats;
+    if (current_canvas->repeat_table->repeat_section != NULL) {
+      free(current_canvas->repeat_table->repeat_section);
+    }
+    current_canvas->repeat_table->repeat_section =
+        calloc(num_repeats, sizeof(RepeatSection));
+    json_reader_read_member(reader, "sections");
+    for (int r = 0; r < num_repeats; r++) {
+      json_reader_read_element(reader, r);
+      json_reader_read_element(reader, 0);
+      current_canvas->repeat_table->repeat_section[r].start_row =
+          json_reader_get_int_value(reader);
+      json_reader_end_element(reader);
+      json_reader_read_element(reader, 1);
+      current_canvas->repeat_table->repeat_section[r].end_row =
+          json_reader_get_int_value(reader);
+      json_reader_end_element(reader);
+      json_reader_end_element(reader);
+    }
+    json_reader_end_member(reader);
+    json_reader_end_member(reader);
+  } else {
+    json_reader_end_member(reader);
+  }
 
   current_canvas->redraw = true;
   g_object_unref(reader);
@@ -97,6 +130,7 @@ void pattern_json_load(char *filename, PatternData *current_canvas) {
 }
 
 JsonBuilder *pattern_json_builder(PatternData *pattern) {
+  RepeatTable *repeat_table = pattern->repeat_table;
   JsonBuilder *builder = json_builder_new();
 
   json_builder_begin_object(builder);
@@ -226,6 +260,24 @@ JsonBuilder *pattern_json_builder(PatternData *pattern) {
     json_builder_end_object(builder);
   }
   json_builder_end_array(builder);
+  // add repeat row data
+  json_builder_set_member_name(builder, "repeat_table");
+  json_builder_begin_object(builder);
+  json_builder_set_member_name(builder, "num_repeats");
+  json_builder_add_int_value(builder, repeat_table->num_repeats);
+  json_builder_set_member_name(builder, "sections");
+  json_builder_begin_array(builder);
+  for (int i = 0; i < repeat_table->num_repeats; i++) {
+    json_builder_begin_array(builder);
+    json_builder_add_int_value(builder,
+                               repeat_table->repeat_section[i].start_row);
+    json_builder_add_int_value(builder,
+                               repeat_table->repeat_section[i].end_row);
+    json_builder_end_array(builder);
+  }
+  json_builder_end_array(builder);
+  json_builder_end_object(builder);
+
   json_builder_end_object(builder);
 
   return builder;

@@ -106,6 +106,7 @@ int main(int argc, char *argv[]) {
 
   // Allocate memory for the UiState.
   ui_state = calloc(1, sizeof(UiState));
+  ui_state->hovered_repeat_index = -1;
   if (ui_state == NULL) {
     g_print("Error: ui state memory allocation failed.");
     return 1;

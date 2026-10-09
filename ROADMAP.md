@@ -9,7 +9,7 @@
 - [x] **Paint stitch colors**
   - Left-click to paint a cell with the current color.
 - [x] **Paint stitch symbols**
-  - Toggle between “color only” and “symbol” mode.
+  - Toggle between color only and symbol mode.
 - [x] **Move the grid / pan the view**
   - Click-and-drag panning.
 - [x] **Zoom Canvas**
@@ -22,7 +22,7 @@
 - [x] **Active Tools UI**
   - Visible selection for Brush, Eraser, Picker, and Palette.
 - [x] **Eraser tool**
-  - Clear a cell back to “empty” (handling transparent/no-stitch state).
+  - Clear a cell back to empty (handling transparent/no-stitch state).
 - [x] **Color picker**
   - Click a cell to set the current active color.
 - [ ] **Flood Fill (Paint Bucket)**
@@ -31,8 +31,8 @@
 ### File I/O
 
 - [x] **New pattern**
-  - Adjust grid size from user input, reset canvas, draw new grid. *(Only draws transparent grid, need to update draw_grid)*
-- [x] **Save pattern (Native)** (implementation created)
+  - Adjust grid size from user input, reset canvas, draw new grid.
+- [x] **Save pattern (Native)**
   - Serialize grid, dimensions, and palette to JSON.
 - [x] **Load pattern**
   - Restore grid size, colors, and symbols from file.
@@ -40,8 +40,8 @@
   - UI notification ("File Saved") so the user isn't guessing.
 - [x] **Basic Error Handling**
   - Prevent crashes on corrupt files; show error dialogs.
-
----
+- [x] **Run-Length Encoding (RLE) Compression**
+  - Custom JSON serialization logic to group identical stitches and empty space, drastically reducing file sizes.
 
 ## Phase 2: Quality of Life
 
@@ -54,27 +54,27 @@
 - [ ] **Copy / Paste**
   - Internal clipboard to duplicate motifs.
 - [ ] **Keyboard Shortcuts**
-  - `B` (Brush), `E` (Eraser), `Space` (Pan), `Ctrl+Z` (Undo).
+  - Basic undo/redo (`Ctrl+Z`, `Ctrl+Y`) implemented. Need tool mappings (`B` for Brush, `E` for Eraser, `Space` for Pan).
 
 ### Pattern Management
 
+- [x] **Bundled Demo File**
+  - `startup.skn` loads automatically so new users immediately see what the app can do.
 - [ ] **Export to Image**
   - Save the grid as a `.PNG` or `.JPG` for sharing.
-- [ ] **Bundled Demo File**
-  - A "Welcome" pattern so new users immediately see what the app can do.
 - [ ] **Recent Files Menu**
   - Quickly access the last 5 opened patterns.
-
----
 
 ## Phase 3: Knitting Specific Features
 
 ### Pattern Logic
 
+- [x] **Repeats Support (Visuals)**
+  - Mark a section of the grid as a "Repeat" (boxed outline) with dynamic hover detection and tactile rendering.
+- [ ] **Repeats Support (Data & UI)**
+  - Add dialog box prompts to capture and store custom text instructions for each repeat block.
 - [ ] **Written Instruction Generation**
   - Automatically generate text ("Row 1: K2, P2, K2...") from the grid state.
-- [ ] **Repeats Support**
-  - Mark a section of the grid as a "Repeat" (boxed outline) for the text generator.
 - [ ] **"Wrong Side" Logic**
   - Toggle between "Chart View" (always looking from front) and "Flat View" (showing Purls as they are worked on the wrong side).
 - [ ] **Gauge Calculator**
@@ -96,8 +96,6 @@
 - [ ] **Magic Wand Select**
   - Select all connected stitches of the same color.
 
----
-
 ## Phase 4: Release Candidate
 
 ### UI / UX Deep Dive
@@ -118,8 +116,6 @@
   - Allow community scripts (e.g., "Generate Checkerboard").
 - [ ] **Cross-Platform Packaging**
   - Automated builds for Windows (.exe) and macOS (.dmg).
-
----
 
 ## Phase 5: Cloud & Community
 

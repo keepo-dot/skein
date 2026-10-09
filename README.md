@@ -1,8 +1,10 @@
-# Skein [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/keepo-dot/skein/actions) ![Status](https://img.shields.io/badge/status-active-brightgreen.svg) ![GitHub last commit](https://img.shields.io/github/last-commit/keepo-dot/skein)
+# Skein
 
-![C](https://img.shields.io/badge/C-00599C?style=flat-square&logo=c&logoColor=white) ![GTK4](https://img.shields.io/badge/UI-GTK4-orange.svg) [![Clang Format](https://img.shields.io/badge/code%20style-clang-blue.svg)](https://clang.llvm.org/docs/ClangFormat.html)
-![GitHub repo size](https://img.shields.io/github/repo-size/keepo-dot/skein) ![GitHub Repo stars](https://img.shields.io/github/stars/keepo-dot/skein?style=social) ![GitHub forks](https://img.shields.io/github/forks/keepo-dot/skein?style=social)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/keepo-dot/skein/pulls) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/keepo-dot/skein/blob/main/LICENSE)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=flat-square)](https://github.com/keepo-dot/skein/actions) ![Status](https://img.shields.io/badge/status-active-brightgreen.svg?style=flat-square) ![GitHub last commit](https://img.shields.io/github/last-commit/keepo-dot/skein?style=flat-square) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat-square)](https://github.com/keepo-dot/skein/blob/main/LICENSE)
+
+![Platform](https://img.shields.io/badge/Platform-Linux-FCC624?style=flat-square&logo=linux&logoColor=black) ![Arch Linux](https://img.shields.io/badge/Arch_Linux-1793D1?style=flat-square&logo=arch-linux&logoColor=white) ![C](https://img.shields.io/badge/C-00599C?style=flat-square&logo=c&logoColor=white) ![GTK4](https://img.shields.io/badge/UI-GTK4-orange.svg?style=flat-square) ![Make](https://img.shields.io/badge/Build-Make-0A0A0A?style=flat-square&logo=gnu&logoColor=white) ![ASan](https://img.shields.io/badge/Tested_With-AddressSanitizer-DC382D?style=flat-square)
+
+![GitHub repo size](https://img.shields.io/github/repo-size/keepo-dot/skein?style=flat-square) ![GitHub Repo stars](https://img.shields.io/github/stars/keepo-dot/skein?style=social) ![GitHub forks](https://img.shields.io/github/forks/keepo-dot/skein?style=social)
 
 A lightweight, native Linux desktop application for designing and standardizing knitting charts, built entirely in C with GTK4. This project was built to showcase manual memory management, modular C architecture, and native desktop GUI development, while providing a highly functional, vector-based grid interface for designing colorwork and texture charts.
 

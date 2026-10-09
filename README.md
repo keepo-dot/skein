@@ -1,4 +1,6 @@
-# Skein
+<p align="center">
+  <img src="assets/logo.jpg" alt="Skein - Knitting Pattern Maker Logo" width="600">
+</p>
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=flat-square)](https://github.com/keepo-dot/skein/actions) ![Status](https://img.shields.io/badge/status-active-brightgreen.svg?style=flat-square) ![GitHub last commit](https://img.shields.io/github/last-commit/keepo-dot/skein?style=flat-square) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat-square)](https://github.com/keepo-dot/skein/blob/main/LICENSE)
 
@@ -6,7 +8,7 @@
 
 ![GitHub repo size](https://img.shields.io/github/repo-size/keepo-dot/skein?style=flat-square) ![GitHub Repo stars](https://img.shields.io/github/stars/keepo-dot/skein?style=social) ![GitHub forks](https://img.shields.io/github/forks/keepo-dot/skein?style=social)
 
-A lightweight, native Linux desktop application for designing and standardizing knitting charts, built entirely in C with GTK4. This project was built to showcase manual memory management, modular C architecture, and native desktop GUI development, while providing a highly functional, vector-based grid interface for designing colorwork and texture charts.
+Skein is a lightweight, native Linux desktop application for designing and standardizing knitting charts, built entirely in C with GTK4. This project was built to showcase manual memory management, modular C architecture, and native desktop GUI development, while providing a highly functional, vector-based grid interface for designing colorwork and texture charts.
 
 ## Features
 

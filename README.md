@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.jpg" alt="Skein - Knitting Pattern Maker Logo" width="600">
+  <img src="assets/logo.png" alt="Skein - Knitting Pattern Maker Logo" width="600">
 </p>
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=flat-square)](https://github.com/keepo-dot/skein/actions) ![Status](https://img.shields.io/badge/status-active-brightgreen.svg?style=flat-square) ![GitHub last commit](https://img.shields.io/github/last-commit/keepo-dot/skein?style=flat-square) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat-square)](https://github.com/keepo-dot/skein/blob/main/LICENSE)

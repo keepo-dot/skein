@@ -57,9 +57,9 @@ static void activate(GtkApplication *app, gpointer user_data) {
                  grid->stitch_size * 0.7, scale, TRUE, &error);
   if (!repeat_icon) {
     printf("Error fetching icon: %s", error->message);
+    g_object_unref(repeat_icon);
     return;
   }
-  // GdkTexture *r_icon_tex = gdk_texture_new_for_pixbuf(repeat_icon);
   ui_state->repeat_icon = repeat_icon;
 
   gtk_window_present(GTK_WINDOW(main_window));
@@ -127,7 +127,18 @@ int main(int argc, char *argv[]) {
                             G_APPLICATION_DEFAULT_FLAGS);
   g_signal_connect(app, "activate", G_CALLBACK(activate), master_state);
   status = g_application_run(G_APPLICATION(app), argc, argv);
+  if (grid->history_table) {
+    for (int i = 0; i < grid->history_table->current_position; i++) {
+      free(grid->history_table->group[i].action);
+    }
+    free(grid->history_table->group);
+    free(grid->history_table);
+  }
+  free(grid->repeat_table->repeat_section);
+  free(grid->repeat_table);
   free(grid->stitch_data);
+  free(grid);
+  g_object_unref(ui_state->repeat_icon);
   free(ui_state->toolbar_state);
   free(ui_state);
   free(master_state);

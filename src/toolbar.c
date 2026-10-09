@@ -30,6 +30,7 @@ static void on_save_dialog_finish(GObject *file_dialog, GAsyncResult *save_file,
     char *fixed_path = g_strdup_printf("%s.skn", path);
     pattern_json_save(pattern_json_builder(pattern), fixed_path);
     g_free(fixed_path);
+    g_free(path);
   }
   GtkAlertDialog *alert = gtk_alert_dialog_new("Pattern saved successfully!");
   gtk_alert_dialog_show(alert, GTK_WINDOW(main_window));

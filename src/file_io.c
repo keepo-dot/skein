@@ -1,3 +1,4 @@
+#include "glib-object.h"
 #include "resources.h"
 #include "types.h"
 #include <gtk/gtk.h>
@@ -289,4 +290,7 @@ void pattern_json_save(JsonBuilder *builder, char *file_path) {
   json_generator_set_root(generator, root);
   json_generator_set_pretty(generator, true);
   json_generator_to_file(generator, file_path, false);
+  g_object_unref(generator);
+  json_node_free(root);
+  g_object_unref(builder);
 }

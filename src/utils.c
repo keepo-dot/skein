@@ -3,6 +3,7 @@
 #include "gdk/gdk.h"
 #include "gio/gio.h"
 #include "glib-object.h"
+#include "glib.h"
 #include "resources.h"
 #include "types.h"
 #include <gtk/gtk.h>
@@ -43,6 +44,13 @@ GdkPixbuf *fetch_icon(const char *icon_name, int width, int height, int scale,
   }
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_scale(icon_filepath, width,
                                                         height, FALSE, error);
+  if (!pixbuf) {
+    g_set_error(error, G_CONVERT_ERROR, G_CONVERT_ERROR_FAILED,
+                "failed to convert file to pixbuf");
+    g_object_unref(pixbuf);
+    return NULL;
+  }
+  g_error_free(*error);
   g_free(icon_filepath);
   g_object_unref(icon_paintable);
   g_object_unref(icon_file);

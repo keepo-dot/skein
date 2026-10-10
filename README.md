@@ -27,7 +27,7 @@ Skein is a lightweight, native Linux desktop application for designing and stand
 * **Erase (Eraser):** Remove colors and symbols via single click or click-and-drag.
 * **Picker (Eyedropper):** Sample colors directly from the grid (intelligently ignores empty/transparent space).
 * **Stitch (Grid):** Overlay technical knitting symbols (Knit, Purl, Yarn Over, K2tog, SSK, M1, Slip, etc.). The palette automatically adapts to show available technical stitches when this tool is active.
-* **Repeat (Refresh):** Mark bounding boxes around sections of the grid to designate repeating motifs. Features highly-optimized, dynamic visual hover states with bold outlining and color-shifting for immediate visual feedback.
+* **Repeat (Refresh):** Mark bounding boxes around sections of the grid to designate repeating motifs. Features highly-optimized, dynamic visual hover states with bold outlining and color-shifting for immediate visual feedback, and interactive hover tooltips to display the repeat duration/length.
 
 ### Data & Safety
 

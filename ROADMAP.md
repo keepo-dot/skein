@@ -71,8 +71,9 @@
 
 - [x] **Repeats Support (Visuals)**
   - Mark a section of the grid as a "Repeat" (boxed outline) with dynamic hover detection and tactile rendering.
-- [ ] **Repeats Support (Data & UI)**
-  - Add dialog box prompts to capture and store custom text instructions for each repeat block.
+- [x] **Repeats Support (Data & UI)**
+  - Define repeating pattern sections and attach multi-line instructions using a responsive, vertically stacked modal dialog.
+  - Instantly view repeat instructions by hovering over marked sections directly on the knitting canvas.
 - [ ] **Written Instruction Generation**
   - Automatically generate text ("Row 1: K2, P2, K2...") from the grid state.
 - [ ] **"Wrong Side" Logic**

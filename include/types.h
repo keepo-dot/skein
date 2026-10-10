@@ -61,6 +61,7 @@ typedef struct {
 typedef struct {
   int start_row;
   int end_row;
+  char *repeat_info;
 } RepeatSection;
 
 typedef struct {

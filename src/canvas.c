@@ -25,18 +25,7 @@ static gboolean needs_redraw(GtkWidget *widget, GdkFrameClock *frame_clock,
 
   return G_SOURCE_CONTINUE; // tells gtk to run the function again.
 }
-/* TODO: disable GTK thread bullshit while undo is running so I can sleep undo.
- * so like
- *  undo {
- * disable gtk crap //because race crap
- * do undo stuff
- * enable  gtk crap
- * return 1
- *
- * enable gtk crap
- * return error
- * }
- * kinda structure */
+
 gboolean undo_action(GtkWidget *widget, GVariant *args, gpointer app_state) {
   AppState *state = (AppState *)app_state;
   HistoryTable *history_table = state->pattern->history_table;
@@ -155,7 +144,7 @@ static void apply_tool_to_cell(AppState *app_state, int index) {
 // handles release events.
 static void on_drag_end(GtkGestureDrag *gesture, double offset_x,
                         double offset_y, AppState *app_state) {
-  g_print("1. Entered on_drag_end\n");
+  // g_print("1. Entered on_drag_end\n");
   PatternData *grid_data = app_state->pattern;
   int column = (int)((grid_data->mouse_start_x + grid_data->camera_x) /
                      app_state->pattern->stitch_size);
@@ -174,30 +163,29 @@ static void on_drag_end(GtkGestureDrag *gesture, double offset_x,
     GdkRGBA after_color = first_delta->after_state.stitch_color;
 
     if (toolbar_state && toolbar_state->active_mode == MODE_REPEAT) {
-      toolbar_state->is_drawing_repeat = false;
-      if (repeat_table->num_repeats >= repeat_table->table_size) {
-        size_t new_cap = (repeat_table->table_size * 2);
-        if (new_cap == 0) {
-          new_cap = 1;
-        }
-        repeat_table->repeat_section = realloc(repeat_table->repeat_section,
-                                               new_cap * sizeof(RepeatSection));
-        for (size_t i = repeat_table->table_size; i < new_cap; i++) {
-          repeat_table->repeat_section[i].start_row = 0;
-          repeat_table->repeat_section[i].end_row = 0;
-        }
-        repeat_table->table_size = new_cap;
-      }
-      repeat_table->repeat_section[repeat_table->num_repeats].start_row =
-          pattern_data->temp_repeat_start;
-      repeat_table->repeat_section[repeat_table->num_repeats].end_row =
-          pattern_data->temp_repeat_end;
-      repeat_table->num_repeats++;
-      history->group[history->current_position - 1].action_type =
-          ACTION_REPEAT_ADD;
-      history->group[history->current_position - 1].group_size = 0;
-      history->group[history->current_position - 1].action = NULL;
-      pattern_data->redraw = true;
+      show_repeat_dialog(app_state->main_window, app_state);
+      // move to on_repeat_confirm
+      /*
+       *  if (repeat_table->num_repeats >= repeat_table->table_size) {
+       *  size_t new_cap = (repeat_table->table_size * 2);
+       *  if (new_cap == 0) {
+       *    new_cap = 1;
+       *  }
+       *  repeat_table->repeat_section = realloc(repeat_table->repeat_section,
+       *                                         new_cap *
+       * sizeof(RepeatSection)); for (size_t i = repeat_table->table_size; i <
+       * new_cap; i++) { repeat_table->repeat_section[i].start_row = 0;
+       *    repeat_table->repeat_section[i].end_row = 0;
+       *  }
+       *  repeat_table->table_size = new_cap;
+       * }
+       * repeat_table->num_repeats++;
+       *
+       * history->group[history->current_position - 1].action_type =
+       *    ACTION_REPEAT_ADD;
+       * history->group[history->current_position - 1].group_size = 0;
+       * history->group[history->current_position - 1].action = NULL;
+       * pattern_data->redraw = true; */
       return;
     }
     if (!(toolbar_state->active_mode == MODE_STITCH ||
@@ -516,9 +504,12 @@ GtkWidget *create_pattern_view(AppState *app_state) {
                    app_state);
   g_signal_connect(mouse_motion_event, "motion", G_CALLBACK(on_motion),
                    app_state);
+  g_signal_connect(area, "query-tooltip", G_CALLBACK(on_repeat_hover),
+                   app_state);
   gtk_widget_add_controller(area, GTK_EVENT_CONTROLLER(mouse_drag_event));
   gtk_widget_add_controller(area, GTK_EVENT_CONTROLLER(mouse_scroll_event));
   gtk_widget_add_controller(area, GTK_EVENT_CONTROLLER(mouse_motion_event));
+  gtk_widget_set_has_tooltip(area, TRUE);
   gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(area), draw_grid, app_state,
                                  NULL);
 

@@ -134,6 +134,7 @@ int main(int argc, char *argv[]) {
     free(grid->history_table->group);
     free(grid->history_table);
   }
+  free(grid->repeat_table->repeat_section->repeat_info);
   free(grid->repeat_table->repeat_section);
   free(grid->repeat_table);
   free(grid->stitch_data);

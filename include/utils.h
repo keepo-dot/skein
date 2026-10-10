@@ -18,4 +18,8 @@ void pattern_reset_size(PatternData *pattern, int new_width, int new_height);
 void show_new_pattern_dialog(GtkWidget *main_window, AppState *app_state);
 void on_new_pattern_confirm(GtkWidget *button, gpointer app_state);
 GtkFileDialog *setup_file_dialog(char *window_title);
+void show_repeat_dialog(GtkWidget *main_window, AppState *app_state);
+gboolean on_repeat_hover(GtkWidget *draw_area, gint mouse_x, gint mouse_y,
+                         gboolean keyboard_trigger, GtkTooltip *tooltip,
+                         AppState *app_state);
 #endif // !UTILS_H

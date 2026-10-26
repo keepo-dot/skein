@@ -24,6 +24,8 @@ ButtonInfo toolbar_buttons_mode[] = {
      GINT_TO_POINTER(MODE_MOVE), 1},
     {"Paint Stitch", "draw-brush-symbolic", STITCH_EMPTY, MODE_PAINT, NULL,
      GINT_TO_POINTER(MODE_PAINT), 1},
+    {"Fill", "color-fill-symbolic", STITCH_EMPTY, MODE_FILL, NULL,
+     GINT_TO_POINTER(MODE_FILL), 1},
     {"Erase Stitch", "draw-eraser-symbolic", STITCH_EMPTY, MODE_ERASE, NULL,
      GINT_TO_POINTER(MODE_ERASE), 1},
     {"Color Picker", "color-picker-symbolic", STITCH_EMPTY, MODE_PICKER, NULL,

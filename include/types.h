@@ -17,6 +17,7 @@ typedef enum {
 typedef enum {
   MODE_MOVE,
   MODE_PAINT,
+  MODE_FILL,
   MODE_ERASE,
   MODE_PICKER,
   MODE_COLOR,

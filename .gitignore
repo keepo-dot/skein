@@ -60,4 +60,7 @@ logs/*
 # compiled files
 skein
 compile_flags.txt
+
+# misc
+.clang-tidy
 test/*

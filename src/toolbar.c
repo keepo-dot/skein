@@ -3,7 +3,6 @@
 #include "gio/gio.h"
 #include "glib-object.h"
 #include "glib.h"
-#include "gtk/gtkshortcut.h"
 #include "resources.h"
 #include "types.h"
 #include "utils.h"

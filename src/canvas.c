@@ -137,6 +137,11 @@ static void apply_tool_to_cell(AppState *app_state, int index) {
       toolbar_state->active_color = grid_data->stitch_data[index].stitch_color;
     }
     break;
+  case MODE_FILL:
+    // TODO: add functioniality for fill bucket.
+    //       check if mouse is enclosed in solid color/stitch ie. black border,
+    //       stitch border, etc. fill if true.
+    break;
   default:
     break;
   }

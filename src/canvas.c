@@ -138,9 +138,8 @@ static void apply_tool_to_cell(AppState *app_state, int index) {
     }
     break;
   case MODE_FILL:
-    // TODO: add functioniality for fill bucket.
-    //       check if mouse is enclosed in solid color/stitch ie. black border,
-    //       stitch border, etc. fill if true.
+    // TODO: add functionality for fill bucket.
+    fill_cells(app_state);
     break;
   default:
     break;
@@ -162,25 +161,34 @@ static void on_drag_end(GtkGestureDrag *gesture, double offset_x,
     PatternData *pattern_data = app_state->pattern;
     HistoryTable *history = app_state->pattern->history_table;
     RepeatTable *repeat_table = app_state->pattern->repeat_table;
-    StitchDelta *first_delta =
-        &history->group[history->current_position - 1].action[0];
-    GdkRGBA before_color = first_delta->before_state.stitch_color;
-    GdkRGBA after_color = first_delta->after_state.stitch_color;
+    ActionGroup *last_group = &history->group[history->current_position - 1];
 
     if (toolbar_state && toolbar_state->active_mode == MODE_REPEAT) {
       show_repeat_dialog(app_state->main_window, app_state);
       return;
     }
-    if (!(toolbar_state->active_mode == MODE_STITCH ||
-          toolbar_state->active_mode == MODE_PAINT)) {
-      if (before_color.red == after_color.red &&
-          before_color.green == after_color.green &&
-          before_color.blue == after_color.blue &&
-          before_color.alpha == after_color.alpha &&
-          first_delta->before_state.stitch_type ==
-              first_delta->after_state.stitch_type) {
-        free(history->group[history->current_position - 1].action);
-        history->group[history->current_position - 1].action = NULL;
+    bool should_discard = false;
+    if (last_group->group_size == 0) {
+      should_discard = true;
+    } else if (last_group->group_size == 1) {
+      StitchDelta *first_delta =
+          &history->group[history->current_position - 1].action[0];
+      GdkRGBA before_color = first_delta->before_state.stitch_color;
+      GdkRGBA after_color = first_delta->after_state.stitch_color;
+      if (last_group->group_size == 0 ||
+          (last_group->group_size == 1 && before_color.red == after_color.red &&
+           before_color.green == after_color.green &&
+           before_color.blue == after_color.blue &&
+           before_color.alpha == after_color.alpha &&
+           first_delta->before_state.stitch_type ==
+               first_delta->after_state.stitch_type)) {
+        should_discard = true;
+      }
+      if (should_discard) {
+        if (last_group->action != NULL) {
+          free(last_group->action);
+          last_group->action = NULL;
+        }
         history->current_position -= 1;
         history->history_count -= 1;
       }
@@ -256,6 +264,10 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
       (int)((start_y + grid_data->camera_y) / app_state->pattern->stitch_size);
   RepeatTable *repeat_table = app_state->pattern->repeat_table;
 
+  /* if (toolbar_state->active_mode == MODE_FILL) {
+    fill_cells(app_state);
+  }*/
+
   if (toolbar_state && toolbar_state->active_mode == MODE_MOVE) {
     grid_data->drag_start_x = grid_data->camera_x;
     grid_data->drag_start_y = grid_data->camera_y;
@@ -302,13 +314,19 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
         &grid_data->history_table
              ->group[grid_data->history_table->current_position];
 
-    agroup->action = calloc(1, sizeof(StitchDelta));
-    agroup->group_size = 1;
     agroup->action_type = ACTION_STITCH_EDIT;
-    agroup->action->cell_num = index;
-    agroup->action->before_state = grid_data->stitch_data[index];
-    apply_tool_to_cell(app_state, index);
-    agroup->action->after_state = grid_data->stitch_data[index];
+    if (toolbar_state->active_mode != MODE_FILL) {
+      agroup->action = calloc(1, sizeof(StitchDelta));
+      agroup->group_size = 1;
+      agroup->action->cell_num = index;
+      agroup->action->before_state = grid_data->stitch_data[index];
+      apply_tool_to_cell(app_state, index);
+      agroup->action->after_state = grid_data->stitch_data[index];
+    } else if (toolbar_state->active_mode == MODE_FILL) {
+      agroup->group_size = 0;
+      agroup->action = NULL;
+      apply_tool_to_cell(app_state, index);
+    }
     grid_data->history_table->current_position++;
     grid_data->history_table->history_count++;
   }

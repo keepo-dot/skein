@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
   g_signal_connect(app, "activate", G_CALLBACK(activate), master_state);
   status = g_application_run(G_APPLICATION(app), argc, argv);
   if (grid->history_table) {
-    for (int i = 0; i < grid->history_table->current_position; i++) {
+    for (int i = 0; i < grid->history_table->history_count; i++) {
       free(grid->history_table->group[i].action);
     }
     free(grid->history_table->group);

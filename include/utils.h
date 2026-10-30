@@ -4,6 +4,7 @@
 #include "types.h"
 #include <gtk/gtk.h>
 #include <json-glib-1.0/json-glib/json-glib.h>
+void fill_cells(AppState *app_state);
 GdkPixbuf *fetch_icon(const char *icon_name, int width, int height, int scale,
                       gboolean preserve_aspect_ratio, GError **error);
 void draw_repeat_outlines(GtkDrawingArea *area, cairo_t *cr, int w, int h,

@@ -8,6 +8,106 @@
 #include "types.h"
 #include <gtk/gtk.h>
 #include <json-glib-1.0/json-glib/json-glib.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* A depth first traversal through the grid, checking all neighbors against the
+ * color of the clicked cell. If the cell is the same color as the user's active
+ * color, return to avoid infinite loops. Any cell that is the same color as the
+ * clicked color is added to the list of cells, one cell is changed at a time.
+ * */
+
+void fill_cells(AppState *app_state) {
+  // if the user hasn't picked a color or stitch, return to avoid segfaulting.
+  if (app_state->ui->toolbar_state->active_color.alpha == 0.0) {
+    return;
+  }
+  PatternData *grid_data = app_state->pattern;
+  ActionGroup *agroup =
+      &grid_data->history_table
+           ->group[grid_data->history_table->current_position];
+  double start_x, start_y;
+  start_x = grid_data->mouse_start_x;
+  start_y = grid_data->mouse_start_y;
+  int col =
+      (int)((start_x + grid_data->camera_x) / app_state->pattern->stitch_size);
+  int row =
+      (int)((start_y + grid_data->camera_y) / app_state->pattern->stitch_size);
+  StitchData *cell = &grid_data->stitch_data[(row * grid_data->width) + col];
+  GdkRGBA cell_color = cell->stitch_color;
+  GdkRGBA active_color = app_state->ui->toolbar_state->active_color;
+
+  if (!memcmp(&cell_color, &active_color, sizeof(GdkRGBA))) {
+    return;
+  }
+  Coords *coord_table =
+      calloc((grid_data->width * grid_data->height), sizeof(Coords));
+  int top = 0;
+  coord_table[top].col = col;
+  coord_table[top].row = row;
+  top++;
+  while (top > 0) {
+    top--;
+    int cur_r, cur_c;
+    cur_r = coord_table[top].row;
+    cur_c = coord_table[top].col;
+    int cur_idx = (cur_r * grid_data->width) + cur_c;
+    agroup->group_size++;
+    agroup->action =
+        realloc(agroup->action, agroup->group_size * sizeof(StitchDelta));
+    agroup->action[agroup->group_size - 1].cell_num = cur_idx;
+    agroup->action[agroup->group_size - 1].before_state =
+        grid_data->stitch_data[cur_idx];
+    grid_data->stitch_data[cur_idx].stitch_color = active_color;
+    if (grid_data->stitch_data[cur_idx].stitch_type == STITCH_EMPTY) {
+      grid_data->stitch_data[cur_idx].stitch_type = STITCH_KNIT;
+    }
+    agroup->action[agroup->group_size - 1].after_state =
+        grid_data->stitch_data[cur_idx];
+    // north check
+    if (cur_r - 1 >= 0) {
+      int up_idx = ((cur_r - 1) * grid_data->width) + cur_c;
+      if (!(memcmp(&grid_data->stitch_data[up_idx].stitch_color, &cell_color,
+                   sizeof(GdkRGBA)))) {
+        coord_table[top].row = cur_r - 1;
+        coord_table[top].col = cur_c;
+        top++;
+      }
+    }
+    // south check
+    if (cur_r + 1 < grid_data->height) {
+      int down_idx = ((cur_r + 1) * grid_data->width) + cur_c;
+      if (!memcmp(&grid_data->stitch_data[down_idx].stitch_color, &cell_color,
+                  sizeof(GdkRGBA))) {
+        coord_table[top].row = cur_r + 1;
+        coord_table[top].col = cur_c;
+        top++;
+      }
+    }
+    // west check
+    if (cur_c - 1 >= 0) {
+      int l_idx = (cur_r * grid_data->width) + (cur_c - 1);
+      if (!memcmp(&grid_data->stitch_data[l_idx].stitch_color, &cell_color,
+                  sizeof(GdkRGBA))) {
+        coord_table[top].row = cur_r;
+        coord_table[top].col = cur_c - 1;
+        top++;
+      }
+    }
+    // east check
+    if (cur_c + 1 < grid_data->width) {
+      int r_idx = (cur_r * grid_data->width) + (cur_c + 1);
+      if (!memcmp(&grid_data->stitch_data[r_idx].stitch_color, &cell_color,
+                  sizeof(GdkRGBA))) {
+        coord_table[top].row = cur_r;
+        coord_table[top].col = cur_c + 1;
+        top++;
+      }
+    }
+  }
+  free(coord_table);
+  grid_data->redraw = true;
+}
 
 GdkPixbuf *fetch_icon(const char *icon_name, int width, int height, int scale,
                       gboolean preserve_aspect_ratio, GError **error) {

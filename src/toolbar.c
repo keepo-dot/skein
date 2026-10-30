@@ -170,6 +170,9 @@ static void on_tool_toggled(GtkToggleButton *button, gpointer toolbar_state) {
     case MODE_ERASE:
     case MODE_PICKER:
     case MODE_REPEAT:
+    case MODE_FILL:
+      gtk_widget_set_visible(state->palette_container, true);
+      break;
 
     default:
       gtk_widget_set_visible(state->palette_container, false);

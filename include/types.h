@@ -36,6 +36,11 @@ typedef enum {
 } ActionType;
 
 typedef struct {
+  int col;
+  int row;
+} Coords;
+
+typedef struct {
   GdkRGBA stitch_color;   // color value
   StitchType stitch_type; // type of stitch.
 } StitchData;

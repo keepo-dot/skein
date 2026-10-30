@@ -25,7 +25,7 @@
   - Clear a cell back to empty (handling transparent/no-stitch state).
 - [x] **Color picker**
   - Click a cell to set the current active color.
-- [ ] **Flood Fill (Paint Bucket)**
+- [x] **Flood Fill (Paint Bucket)**
   - Fill an enclosed area with a selected color/stitch.
 
 ### File I/O

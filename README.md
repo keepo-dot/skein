@@ -24,6 +24,7 @@ Skein is a lightweight, native Linux desktop application for designing and stand
 
 * **Move (Arrow):** Pan the camera view effortlessly across the canvas.
 * **Paint (Brush):** Apply yarn colors to the grid. Right-click any color swatch in the palette to dynamically customize it using a native color selection dialog.
+* **Fill (Paint Bucket):** Rapidly fill contiguous blocks of transparent space or existing yarn colors with a single click. Fully integrated with the Undo/Redo stack to reverse massive fills instantly.
 * **Erase (Eraser):** Remove colors and symbols via single click or click-and-drag.
 * **Picker (Eyedropper):** Sample colors directly from the grid (intelligently ignores empty/transparent space).
 * **Stitch (Grid):** Overlay technical knitting symbols (Knit, Purl, Yarn Over, K2tog, SSK, M1, Slip, etc.). The palette automatically adapts to show available technical stitches when this tool is active.

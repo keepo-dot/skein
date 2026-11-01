@@ -48,6 +48,7 @@ void pattern_apply_stitch(PatternData *pattern, int index, PatternColor color,
     return;
   }
   agroup->group_size = 1;
+  agroup->action_type = ACTION_STITCH_EDIT;
   agroup->action->cell_num = index;
   agroup->action->before_state = pattern->stitch_data[index];
   pattern->stitch_data[index].stitch_type = stitch;

@@ -1,4 +1,5 @@
 #include "pattern.h"
+#include "pattern_types.h"
 #include "resources.h"
 #include "ui_types.h"
 #include "utils.h"
@@ -270,6 +271,9 @@ void on_drag_begin(GtkGestureDrag *gesture, double start_x, double start_y,
       active_tool = toolbar_state->active_mode;
       color = TO_PATTERN_COLOR(toolbar_state->active_color);
       stitch = toolbar_state->active_stitch;
+      if (toolbar_state->active_stitch == STITCH_EMPTY) {
+        stitch = STITCH_KNIT;
+      }
     }
     pattern_apply_stitch(grid_data, index, color, stitch);
   }

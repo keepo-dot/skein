@@ -19,7 +19,7 @@
 #include "glib-object.h"
 #include "skein_window.h"
 #include "toolbar.h"
-#include "types.h"
+#include "ui_types.h"
 #include "utils.h"
 #include <gtk/gtk.h>
 #include <stddef.h>

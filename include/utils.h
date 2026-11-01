@@ -1,7 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "types.h"
+#include "ui_types.h"
 #include <gtk/gtk.h>
 #include <json-glib-1.0/json-glib/json-glib.h>
 void fill_cells(AppState *app_state);

@@ -1,7 +1,7 @@
 #ifndef RESOURCES_H
 #define RESOURCES_H
 
-#include "types.h"
+#include "ui_types.h"
 #include <gtk/gtk.h>
 
 // file config

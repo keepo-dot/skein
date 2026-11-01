@@ -4,7 +4,6 @@
 #include "glib-object.h"
 #include "glib.h"
 #include "resources.h"
-#include "types.h"
 #include "utils.h"
 #include <gtk/gtk.h>
 #include <json-glib-1.0/json-glib/json-glib.h>
@@ -63,7 +62,8 @@ static void on_load_dialog_finish(GObject *file_dialog,
     g_object_unref(null_path);
     return;
   }
-  pattern_json_load(path, app_state);
+  pattern_json_load(path, app_state->pattern);
+  app_state->ui->redraw = true;
   GtkAlertDialog *alert = gtk_alert_dialog_new("Pattern loaded successfully!");
   gtk_alert_dialog_show(alert, GTK_WINDOW(main_window));
   g_object_unref(alert);
@@ -323,6 +323,6 @@ GtkWidget *create_toolbar(AppState *app_state) {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(first_tool), true);
   }
   // load startup screen, will put in its own place later.
-  pattern_json_load("startup.skn", app_state);
+  pattern_json_load("startup.skn", app_state->pattern);
   return toolbar;
 }

@@ -1,6 +1,6 @@
 #ifndef SKEIN_TOOLBAR_H
 #define SKEIN_TOOLBAR_H
-#include "types.h"
+#include "ui_types.h"
 #include <gtk/gtk.h>
 GtkWidget *create_toolbar(AppState *state);
 #endif

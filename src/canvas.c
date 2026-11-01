@@ -4,7 +4,7 @@
 #include "glib.h"
 #include "glibconfig.h"
 #include "resources.h"
-#include "types.h"
+#include "ui_types.h"
 #include "utils.h"
 #include <gtk/gtk.h>
 #include <stddef.h>
@@ -106,7 +106,8 @@ static void apply_tool_to_cell(AppState *app_state, int index) {
     GdkRGBA initial_color = toolbar_state->active_color;
 
     if (initial_color.alpha != 0) {
-      grid_data->stitch_data[index].stitch_color = toolbar_state->active_color;
+      grid_data->stitch_data[index].stitch_color =
+          TO_PATTERN_COLOR(toolbar_state->active_color);
 
       if (toolbar_state->active_stitch != STITCH_EMPTY) {
         grid_data->stitch_data[index].stitch_type =
@@ -122,22 +123,23 @@ static void apply_tool_to_cell(AppState *app_state, int index) {
   case MODE_STITCH:
     grid_data->stitch_data[index].stitch_type = toolbar_state->active_stitch;
     if (toolbar_state->active_color.alpha != 0.0) {
-      grid_data->stitch_data[index].stitch_color = toolbar_state->active_color;
+      grid_data->stitch_data[index].stitch_color =
+          TO_PATTERN_COLOR(toolbar_state->active_color);
     }
     app_state->ui->redraw = true;
     break;
   case MODE_ERASE:
     grid_data->stitch_data[index].stitch_type = STITCH_EMPTY;
-    grid_data->stitch_data[index].stitch_color = COLOR_EMPTY;
+    grid_data->stitch_data[index].stitch_color = TO_PATTERN_COLOR(COLOR_EMPTY);
     app_state->ui->redraw = true;
     break;
   case MODE_PICKER:
     if (grid_data->stitch_data[index].stitch_color.alpha > 0.0) {
-      toolbar_state->active_color = grid_data->stitch_data[index].stitch_color;
+      toolbar_state->active_color =
+          TO_GDK_RGBA(grid_data->stitch_data[index].stitch_color);
     }
     break;
   case MODE_FILL:
-    // TODO: add functionality for fill bucket.
     fill_cells(app_state);
     break;
   default:
@@ -173,8 +175,9 @@ static void on_drag_end(GtkGestureDrag *gesture, double offset_x,
     } else if (last_group->group_size == 1) {
       StitchDelta *first_delta =
           &history->group[history->current_position - 1].action[0];
-      GdkRGBA before_color = first_delta->before_state.stitch_color;
-      GdkRGBA after_color = first_delta->after_state.stitch_color;
+      GdkRGBA before_color =
+          TO_GDK_RGBA(first_delta->before_state.stitch_color);
+      GdkRGBA after_color = TO_GDK_RGBA(first_delta->after_state.stitch_color);
       if (last_group->group_size == 0 ||
           (last_group->group_size == 1 && before_color.red == after_color.red &&
            before_color.green == after_color.green &&
@@ -425,7 +428,7 @@ static void draw_grid(GtkDrawingArea *area, cairo_t *cr, int width, int height,
       double pixel_y =
           (i * app_state->pattern->stitch_size) - ui->camera_y; // height
       int index = (i * grid->width) + j;
-      GdkRGBA cell_color = grid->stitch_data[index].stitch_color;
+      GdkRGBA cell_color = TO_GDK_RGBA(grid->stitch_data[index].stitch_color);
       if (grid->stitch_data[index].stitch_type != STITCH_EMPTY &&
           grid->stitch_data[index].stitch_color.alpha == 0.0) {
         cell_color = fg_color;
@@ -443,7 +446,7 @@ static void draw_grid(GtkDrawingArea *area, cairo_t *cr, int width, int height,
 
       if (grid->stitch_data[index].stitch_type) {
 
-        GdkRGBA *bg = &grid->stitch_data[index].stitch_color;
+        GdkRGBA *bg = &TO_GDK_RGBA(grid->stitch_data[index].stitch_color);
 
         // If the stitch is transparent (unpainted), assume the background is
         // White

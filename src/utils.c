@@ -5,7 +5,7 @@
 #include "glib-object.h"
 #include "glib.h"
 #include "resources.h"
-#include "types.h"
+#include "ui_types.h"
 #include <gtk/gtk.h>
 #include <json-glib-1.0/json-glib/json-glib.h>
 #include <stdlib.h>
@@ -33,7 +33,7 @@ void fill_cells(AppState *app_state) {
   int col = (int)((start_x + ui->camera_x) / app_state->pattern->stitch_size);
   int row = (int)((start_y + ui->camera_y) / app_state->pattern->stitch_size);
   StitchData *cell = &grid_data->stitch_data[(row * grid_data->width) + col];
-  GdkRGBA cell_color = cell->stitch_color;
+  GdkRGBA cell_color = TO_GDK_RGBA(cell->stitch_color);
   GdkRGBA active_color = app_state->ui->toolbar_state->active_color;
 
   if (!memcmp(&cell_color, &active_color, sizeof(GdkRGBA))) {
@@ -57,7 +57,8 @@ void fill_cells(AppState *app_state) {
     agroup->action[agroup->group_size - 1].cell_num = cur_idx;
     agroup->action[agroup->group_size - 1].before_state =
         grid_data->stitch_data[cur_idx];
-    grid_data->stitch_data[cur_idx].stitch_color = active_color;
+    grid_data->stitch_data[cur_idx].stitch_color =
+        TO_PATTERN_COLOR(active_color);
     if (grid_data->stitch_data[cur_idx].stitch_type == STITCH_EMPTY) {
       grid_data->stitch_data[cur_idx].stitch_type = STITCH_KNIT;
     }

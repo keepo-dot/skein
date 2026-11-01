@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "canvas.h"
+#include "canvas_render.h"
 #include "gdk-pixbuf/gdk-pixbuf.h"
 #include "glib-object.h"
 #include "skein_window.h"

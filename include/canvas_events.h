@@ -3,6 +3,10 @@
 
 #include "ui_types.h"
 
+gboolean undo_action(GtkWidget *widget, GVariant *args, gpointer app_state);
+
+gboolean redo_action(GtkWidget *widget, GVariant *args, gpointer app_state);
+
 void on_drag_end(GtkGestureDrag *gesture, double offset_x, double offset_y,
                  AppState *app_state);
 void on_drag_update(GtkGestureDrag *gesture, double offset_x, double offset_y,

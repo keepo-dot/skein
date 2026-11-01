@@ -80,18 +80,9 @@ typedef struct {
   int width;               // X stitches wide.
   int height;              // Y rows high.
   StitchData *stitch_data; // What's actually IN the objects in the grid.
-  bool redraw;             // if grid needs redrawn.
-  double camera_x;         // viewport x position.
-  double camera_y;         // viewport y position.
-  double drag_start_x;     // drag event start x pos.
-  double drag_start_y;     // drag event start y pos.
-  double mouse_start_x;    // mouse start x pos.
-  double mouse_start_y;    // mouse start y pos.
   int stitch_size;
   HistoryTable *history_table;
   RepeatTable *repeat_table;
-  int temp_repeat_start;
-  int temp_repeat_end;
 } PatternData;
 
 typedef struct {
@@ -119,8 +110,17 @@ typedef struct {
 typedef struct {
   PatternData *pattern_data;
   ToolbarState *toolbar_state;
+  bool redraw;          // if grid needs redrawn.
+  double camera_x;      // viewport x position.
+  double camera_y;      // viewport y position.
+  double drag_start_x;  // drag event start x pos.
+  double drag_start_y;  // drag event start y pos.
+  double mouse_start_x; // mouse start x pos.
+  double mouse_start_y; // mouse start y pos.
   double offset_x;
   double offset_y;
+  int temp_repeat_start;
+  int temp_repeat_end;
   GdkPixbuf *repeat_icon;
   int hovered_repeat_index;
 } UiState;

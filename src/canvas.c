@@ -15,12 +15,11 @@
 
 // checks if grid needs redrawn, if so, calls a redraw.
 static gboolean needs_redraw(GtkWidget *widget, GdkFrameClock *frame_clock,
-                             gpointer grid_data) {
-  PatternData *grid = (PatternData *)grid_data;
-
-  if (grid->redraw == true) {
+                             gpointer ui_p) {
+  UiState *ui = (UiState *)ui_p;
+  if (ui->redraw == true) {
     gtk_widget_queue_draw(widget);
-    grid->redraw = false; // reset draw flag to avoid runaway.
+    ui->redraw = false; // reset draw flag to avoid runaway.
   }
 
   return G_SOURCE_CONTINUE; // tells gtk to run the function again.
@@ -46,7 +45,7 @@ gboolean undo_action(GtkWidget *widget, GVariant *args, gpointer app_state) {
         data->stitch_type = agroup->action[i].before_state.stitch_type;
       }
       history_table->current_position -= 1;
-      state->pattern->redraw = true;
+      state->ui->redraw = true;
       return true;
     }
   case ACTION_REPEAT_ADD:
@@ -55,7 +54,7 @@ gboolean undo_action(GtkWidget *widget, GVariant *args, gpointer app_state) {
     }
     repeat_table->num_repeats--;
     history_table->current_position--;
-    state->pattern->redraw = true;
+    state->ui->redraw = true;
     return true;
   default:
     return false;
@@ -80,7 +79,7 @@ gboolean redo_action(GtkWidget *widget, GVariant *args, gpointer app_state) {
         data->stitch_type = agroup->action[i].after_state.stitch_type;
       }
       history_table->current_position += 1;
-      state->pattern->redraw = true;
+      state->ui->redraw = true;
       return true;
     }
   case ACTION_REPEAT_ADD:
@@ -89,7 +88,7 @@ gboolean redo_action(GtkWidget *widget, GVariant *args, gpointer app_state) {
     }
     repeat_table->num_repeats++;
     history_table->current_position++;
-    state->pattern->redraw = true;
+    state->ui->redraw = true;
     return true;
   default:
     break;
@@ -117,7 +116,7 @@ static void apply_tool_to_cell(AppState *app_state, int index) {
       }
     }
 
-    grid_data->redraw = true;
+    app_state->ui->redraw = true;
     break;
   }
   case MODE_STITCH:
@@ -125,12 +124,12 @@ static void apply_tool_to_cell(AppState *app_state, int index) {
     if (toolbar_state->active_color.alpha != 0.0) {
       grid_data->stitch_data[index].stitch_color = toolbar_state->active_color;
     }
-    grid_data->redraw = true;
+    app_state->ui->redraw = true;
     break;
   case MODE_ERASE:
     grid_data->stitch_data[index].stitch_type = STITCH_EMPTY;
     grid_data->stitch_data[index].stitch_color = COLOR_EMPTY;
-    grid_data->redraw = true;
+    app_state->ui->redraw = true;
     break;
   case MODE_PICKER:
     if (grid_data->stitch_data[index].stitch_color.alpha > 0.0) {
@@ -149,10 +148,11 @@ static void apply_tool_to_cell(AppState *app_state, int index) {
 static void on_drag_end(GtkGestureDrag *gesture, double offset_x,
                         double offset_y, AppState *app_state) {
   // g_print("1. Entered on_drag_end\n");
+  UiState *ui = app_state->ui;
   PatternData *grid_data = app_state->pattern;
-  int column = (int)((grid_data->mouse_start_x + grid_data->camera_x) /
+  int column = (int)((ui->mouse_start_x + ui->camera_x) /
                      app_state->pattern->stitch_size);
-  int row = (int)((grid_data->mouse_start_y + grid_data->camera_y) /
+  int row = (int)((ui->mouse_start_y + ui->camera_y) /
                   app_state->pattern->stitch_size);
 
   if ((column >= 0 && column < grid_data->width) &&
@@ -200,30 +200,31 @@ static void on_drag_end(GtkGestureDrag *gesture, double offset_x,
 static void on_drag_update(GtkGestureDrag *gesture, double offset_x,
                            double offset_y, AppState *app_state) {
   ToolbarState *toolbar_state = app_state->ui->toolbar_state;
+  UiState *ui = app_state->ui;
   PatternData *grid_data = app_state->pattern;
   GtkWidget *area =
       gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-  double current_mouse_x = grid_data->mouse_start_x + offset_x;
-  double current_mouse_y = grid_data->mouse_start_y + offset_y;
-  int column = (int)((current_mouse_x + grid_data->camera_x) /
-                     app_state->pattern->stitch_size);
-  int row = (int)((current_mouse_y + grid_data->camera_y) /
-                  app_state->pattern->stitch_size);
+  double current_mouse_x = ui->mouse_start_x + offset_x;
+  double current_mouse_y = ui->mouse_start_y + offset_y;
+  int column =
+      (int)((current_mouse_x + ui->camera_x) / app_state->pattern->stitch_size);
+  int row =
+      (int)((current_mouse_y + ui->camera_y) / app_state->pattern->stitch_size);
   if (toolbar_state && toolbar_state->active_mode == MODE_REPEAT) {
-    grid_data->temp_repeat_end = row;
-    grid_data->redraw = true;
+    ui->temp_repeat_end = row;
+    ui->redraw = true;
   }
 
   if (toolbar_state->active_mode == MODE_MOVE) {
-    double new_camera_pos_x = grid_data->drag_start_x - offset_x;
-    double new_camera_pos_y = grid_data->drag_start_y - offset_y;
+    double new_camera_pos_x = ui->drag_start_x - offset_x;
+    double new_camera_pos_y = ui->drag_start_y - offset_y;
     int width = gtk_widget_get_width(area);
     int height = gtk_widget_get_height(area);
     int max_x = (grid_data->width * grid_data->stitch_size) - width;
     int max_y = (grid_data->height * grid_data->stitch_size) - height;
-    grid_data->camera_x = MAX(0, MIN(new_camera_pos_x, MAX(0, max_x)));
-    grid_data->camera_y = MAX(0, MIN(new_camera_pos_y, MAX(0, max_y)));
-    grid_data->redraw = true;
+    ui->camera_x = MAX(0, MIN(new_camera_pos_x, MAX(0, max_x)));
+    ui->camera_y = MAX(0, MIN(new_camera_pos_y, MAX(0, max_y)));
+    ui->redraw = true;
   } else if ((column >= 0 && column < grid_data->width) &&
              (row >= 0 && row < grid_data->height)) {
     int index = (row * grid_data->width) + column;
@@ -254,29 +255,25 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
 
   ToolbarState *toolbar_state = app_state->ui->toolbar_state;
   PatternData *grid_data = app_state->pattern;
+  UiState *ui = app_state->ui;
   GtkWidget *area =
       gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-  grid_data->mouse_start_x = start_x;
-  grid_data->mouse_start_y = start_y;
+  ui->mouse_start_x = start_x;
+  ui->mouse_start_y = start_y;
   int column =
-      (int)((start_x + grid_data->camera_x) / app_state->pattern->stitch_size);
-  int row =
-      (int)((start_y + grid_data->camera_y) / app_state->pattern->stitch_size);
+      (int)((start_x + ui->camera_x) / app_state->pattern->stitch_size);
+  int row = (int)((start_y + ui->camera_y) / app_state->pattern->stitch_size);
   RepeatTable *repeat_table = app_state->pattern->repeat_table;
 
-  /* if (toolbar_state->active_mode == MODE_FILL) {
-    fill_cells(app_state);
-  }*/
-
   if (toolbar_state && toolbar_state->active_mode == MODE_MOVE) {
-    grid_data->drag_start_x = grid_data->camera_x;
-    grid_data->drag_start_y = grid_data->camera_y;
+    ui->drag_start_x = ui->camera_x;
+    ui->drag_start_y = ui->camera_y;
   }
 
   if (toolbar_state && toolbar_state->active_mode == MODE_REPEAT) {
     toolbar_state->is_drawing_repeat = true;
-    grid_data->temp_repeat_start = row;
-    grid_data->temp_repeat_end = row;
+    ui->temp_repeat_start = row;
+    ui->temp_repeat_end = row;
   }
 
   if ((column >= 0 && column < grid_data->width) &&
@@ -334,6 +331,7 @@ static void on_drag_begin(GtkGestureDrag *gesture, double start_x,
 
 static gboolean on_scroll(GtkEventControllerScroll *controller, double dx,
                           double dy, AppState *app_state) {
+  UiState *ui = app_state->ui;
   GdkModifierType state = gtk_event_controller_get_current_event_state(
       GTK_EVENT_CONTROLLER(controller));
   GtkWidget *area =
@@ -341,8 +339,8 @@ static gboolean on_scroll(GtkEventControllerScroll *controller, double dx,
   int width = gtk_widget_get_width(area);
   int height = gtk_widget_get_height(area);
   int old_size = app_state->pattern->stitch_size;
-  double center_x = (width / 2.0) + app_state->pattern->camera_x;
-  double center_y = (height / 2.0) + app_state->pattern->camera_y;
+  double center_x = (width / 2.0) + ui->camera_x;
+  double center_y = (height / 2.0) + ui->camera_y;
   double grid_x = center_x / old_size;
   double grid_y = center_y / old_size;
   if (!(state & GDK_CONTROL_MASK)) {
@@ -355,29 +353,25 @@ static gboolean on_scroll(GtkEventControllerScroll *controller, double dx,
     app_state->pattern->stitch_size = 100;
   }
 
-  app_state->pattern->camera_x =
-      (grid_x * app_state->pattern->stitch_size) - (width / 2.0);
-  app_state->pattern->camera_y =
-      (grid_y * app_state->pattern->stitch_size) - (height / 2.0);
+  ui->camera_x = (grid_x * app_state->pattern->stitch_size) - (width / 2.0);
+  ui->camera_y = (grid_y * app_state->pattern->stitch_size) - (height / 2.0);
   int max_x =
       (app_state->pattern->width * app_state->pattern->stitch_size) - width;
   int max_y =
       (app_state->pattern->height * app_state->pattern->stitch_size) - height;
 
-  app_state->pattern->camera_x =
-      MAX(0, MIN(app_state->pattern->camera_x, MAX(0, max_x)));
-  app_state->pattern->camera_y =
-      MAX(0, MIN(app_state->pattern->camera_y, MAX(0, max_y)));
-  app_state->pattern->redraw = true;
+  ui->camera_x = MAX(0, MIN(ui->camera_x, MAX(0, max_x)));
+  ui->camera_y = MAX(0, MIN(ui->camera_y, MAX(0, max_y)));
+  ui->redraw = true;
   return TRUE;
 }
 
 static gboolean on_motion(GtkEventControllerMotion *controller, double mx,
                           double my, AppState *app_state) {
-  UiState *ui_state = app_state->ui;
+  UiState *ui = app_state->ui;
   PatternData *grid_data = app_state->pattern;
   RepeatTable *repeat_table = app_state->pattern->repeat_table;
-  int hover_row = (int)((my + grid_data->camera_y) / grid_data->stitch_size);
+  int hover_row = (int)((my + ui->camera_y) / grid_data->stitch_size);
   int current_hit = -1;
   for (int i = 0; i < app_state->pattern->repeat_table->num_repeats; i++) {
     int s_row = repeat_table->repeat_section[i].start_row;
@@ -389,9 +383,9 @@ static gboolean on_motion(GtkEventControllerMotion *controller, double mx,
       break;
     }
   }
-  if (current_hit != ui_state->hovered_repeat_index) {
-    ui_state->hovered_repeat_index = current_hit;
-    grid_data->redraw = true;
+  if (current_hit != ui->hovered_repeat_index) {
+    ui->hovered_repeat_index = current_hit;
+    ui->redraw = true;
   }
   return TRUE;
 }
@@ -401,6 +395,7 @@ static void draw_grid(GtkDrawingArea *area, cairo_t *cr, int width, int height,
                       gpointer user_data) {
   AppState *app_state = (AppState *)user_data;
   PatternData *grid = app_state->pattern;
+  UiState *ui = app_state->ui;
 
   GdkRGBA fg_color;
 
@@ -411,13 +406,13 @@ static void draw_grid(GtkDrawingArea *area, cairo_t *cr, int width, int height,
                      &clip_y2); // grab the visual bounds.visual
 
   int start_column =
-      (int)((clip_x1 + grid->camera_x) / app_state->pattern->stitch_size);
+      (int)((clip_x1 + ui->camera_x) / app_state->pattern->stitch_size);
   int end_column =
-      (int)((clip_x2 + grid->camera_x) / app_state->pattern->stitch_size) + 1;
+      (int)((clip_x2 + ui->camera_x) / app_state->pattern->stitch_size) + 1;
   int start_row =
-      (int)((clip_y1 + grid->camera_y) / app_state->pattern->stitch_size);
+      (int)((clip_y1 + ui->camera_y) / app_state->pattern->stitch_size);
   int end_row =
-      (int)((clip_y2 + grid->camera_y) / app_state->pattern->stitch_size) + 1;
+      (int)((clip_y2 + ui->camera_y) / app_state->pattern->stitch_size) + 1;
 
   start_column = MAX(0, start_column);
   start_row = MAX(0, start_row);
@@ -426,9 +421,9 @@ static void draw_grid(GtkDrawingArea *area, cairo_t *cr, int width, int height,
   for (int i = start_row; i < end_row; i++) {
     for (int j = start_column; j < end_column; j++) {
       double pixel_x =
-          (j * app_state->pattern->stitch_size) - grid->camera_x; // width
+          (j * app_state->pattern->stitch_size) - ui->camera_x; // width
       double pixel_y =
-          (i * app_state->pattern->stitch_size) - grid->camera_y; // height
+          (i * app_state->pattern->stitch_size) - ui->camera_y; // height
       int index = (i * grid->width) + j;
       GdkRGBA cell_color = grid->stitch_data[index].stitch_color;
       if (grid->stitch_data[index].stitch_type != STITCH_EMPTY &&
@@ -482,13 +477,14 @@ static void draw_grid(GtkDrawingArea *area, cairo_t *cr, int width, int height,
 // general GTK Widget setup. creates a new pattern view and connects click
 // callbacks for movement updates.
 GtkWidget *create_pattern_view(AppState *app_state) {
+  UiState *ui = app_state->ui;
   GtkWidget *area;
   area = gtk_drawing_area_new();
   gtk_widget_set_hexpand(area, true);
   gtk_widget_set_vexpand(area, true);
-  app_state->pattern->redraw = true;
+  ui->redraw = true;
   gtk_widget_add_tick_callback(
-      area, needs_redraw, app_state->pattern,
+      area, needs_redraw, app_state->ui,
       NULL); // adds callback to check if the pattern has changed.
              // makes sure the fps doesn't go zoooooom.
   GtkGesture *mouse_drag_event = gtk_gesture_drag_new();

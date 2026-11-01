@@ -5,8 +5,10 @@
 #include <json-glib-1.0/json-glib/json-glib.h>
 #include <stddef.h>
 
-void pattern_json_load(char *filename, PatternData *current_canvas) {
+void pattern_json_load(char *filename, AppState *app_state) {
+  PatternData *current_canvas = app_state->pattern;
   RepeatTable *repeat_table = current_canvas->repeat_table;
+  UiState *ui = app_state->ui;
   GError *error = NULL;
   JsonParser *parser = json_parser_new();
   json_parser_load_from_file(parser, filename, &error);
@@ -125,7 +127,7 @@ void pattern_json_load(char *filename, PatternData *current_canvas) {
     json_reader_end_member(reader);
   }
 
-  current_canvas->redraw = true;
+  ui->redraw = true;
   g_object_unref(reader);
   g_object_unref(parser);
 }

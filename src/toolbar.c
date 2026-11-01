@@ -63,7 +63,7 @@ static void on_load_dialog_finish(GObject *file_dialog,
     g_object_unref(null_path);
     return;
   }
-  pattern_json_load(path, app_state->pattern);
+  pattern_json_load(path, app_state);
   GtkAlertDialog *alert = gtk_alert_dialog_new("Pattern loaded successfully!");
   gtk_alert_dialog_show(alert, GTK_WINDOW(main_window));
   g_object_unref(alert);
@@ -323,6 +323,6 @@ GtkWidget *create_toolbar(AppState *app_state) {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(first_tool), true);
   }
   // load startup screen, will put in its own place later.
-  pattern_json_load("startup.skn", app_state->pattern);
+  pattern_json_load("startup.skn", app_state);
   return toolbar;
 }

@@ -22,17 +22,16 @@ void fill_cells(AppState *app_state) {
   if (app_state->ui->toolbar_state->active_color.alpha == 0.0) {
     return;
   }
+  UiState *ui = app_state->ui;
   PatternData *grid_data = app_state->pattern;
   ActionGroup *agroup =
       &grid_data->history_table
            ->group[grid_data->history_table->current_position];
   double start_x, start_y;
-  start_x = grid_data->mouse_start_x;
-  start_y = grid_data->mouse_start_y;
-  int col =
-      (int)((start_x + grid_data->camera_x) / app_state->pattern->stitch_size);
-  int row =
-      (int)((start_y + grid_data->camera_y) / app_state->pattern->stitch_size);
+  start_x = ui->mouse_start_x;
+  start_y = ui->mouse_start_y;
+  int col = (int)((start_x + ui->camera_x) / app_state->pattern->stitch_size);
+  int row = (int)((start_y + ui->camera_y) / app_state->pattern->stitch_size);
   StitchData *cell = &grid_data->stitch_data[(row * grid_data->width) + col];
   GdkRGBA cell_color = cell->stitch_color;
   GdkRGBA active_color = app_state->ui->toolbar_state->active_color;
@@ -106,7 +105,7 @@ void fill_cells(AppState *app_state) {
     }
   }
   free(coord_table);
-  grid_data->redraw = true;
+  ui->redraw = true;
 }
 
 GdkPixbuf *fetch_icon(const char *icon_name, int width, int height, int scale,
@@ -181,8 +180,8 @@ void draw_repeat_outlines(GtkDrawingArea *area, cairo_t *cr, int w, int h,
     int top_row = (s_row < e_row) ? s_row : e_row;
     int bottom_row = (s_row < e_row) ? e_row : s_row;
     int num_rows = (bottom_row - top_row) + 1;
-    double x_pos = 0.0 - app_state->pattern->camera_x;
-    double y_pos = (top_row * stitch_size) - app_state->pattern->camera_y;
+    double x_pos = 0.0 - app_state->ui->camera_x;
+    double y_pos = (top_row * stitch_size) - app_state->ui->camera_y;
     double rect_w = stitch_size * app_state->pattern->width;
     double rect_h = stitch_size * num_rows;
     cairo_rectangle(cr, x_pos, y_pos, rect_w, rect_h);
@@ -190,7 +189,7 @@ void draw_repeat_outlines(GtkDrawingArea *area, cairo_t *cr, int w, int h,
     // draw icon in top right corner.
     double r_edge =
         (app_state->pattern->width * app_state->pattern->stitch_size) -
-        app_state->pattern->camera_x;
+        app_state->ui->camera_x;
     double icon_w = r_edge - gdk_pixbuf_get_width(app_state->ui->repeat_icon);
     gdk_cairo_set_source_pixbuf(cr, GDK_PIXBUF(app_state->ui->repeat_icon),
                                 icon_w, y_pos);
@@ -375,16 +374,16 @@ void on_repeat_confirm(GtkWidget *button, AppState *app_state) {
     repeat_table->table_size = new_cap;
   }
   repeat_table->repeat_section[repeat_table->num_repeats].start_row =
-      pattern_data->temp_repeat_start;
+      app_state->ui->temp_repeat_start;
   repeat_table->repeat_section[repeat_table->num_repeats].end_row =
-      pattern_data->temp_repeat_end;
+      app_state->ui->temp_repeat_end;
   repeat_table->repeat_section[repeat_table->num_repeats].repeat_info = text;
   repeat_table->num_repeats++;
 
   history->group[history->current_position - 1].action_type = ACTION_REPEAT_ADD;
   history->group[history->current_position - 1].group_size = 0;
   history->group[history->current_position - 1].action = NULL;
-  pattern_data->redraw = true;
+  app_state->ui->redraw = true;
   gtk_window_destroy(dialog_window);
 }
 
@@ -435,7 +434,7 @@ void on_new_pattern_confirm(GtkWidget *button, gpointer app_state) {
   int new_width = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(w_spin));
   int new_height = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(h_spin));
   pattern_reset_size(state->pattern, new_width, new_height);
-  state->pattern->redraw = true;
+  state->ui->redraw = true;
   gtk_window_destroy(GTK_WINDOW(dialog_window));
 }
 

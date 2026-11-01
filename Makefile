@@ -17,6 +17,7 @@ SRCS = $(SRC_DIR)/skein.c \
        $(SRC_DIR)/canvas_render.c \
 			 $(SRC_DIR)/canvas_events.c \
        $(SRC_DIR)/toolbar.c \
+			 $(SRC_DIR)/pattern.c \
        $(SRC_DIR)/skein_window.c \
        $(SRC_DIR)/utils.c \
 			 $(SRC_DIR)/resources.c \

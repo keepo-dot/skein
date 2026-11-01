@@ -1,3 +1,4 @@
+#include "pattern.h"
 #include "resources.h"
 #include "ui_types.h"
 #include "utils.h"
@@ -233,81 +234,46 @@ void on_drag_update(GtkGestureDrag *gesture, double offset_x, double offset_y,
 // handles single click events like drawing a color,or drawing a stitch.
 void on_drag_begin(GtkGestureDrag *gesture, double start_x, double start_y,
                    AppState *app_state) {
-
-  ToolbarState *toolbar_state = app_state->ui->toolbar_state;
-  PatternData *grid_data = app_state->pattern;
   UiState *ui = app_state->ui;
-  GtkWidget *area =
-      gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  PatternData *grid_data = app_state->pattern;
+  ToolbarState *toolbar_state = app_state->ui->toolbar_state;
+
+  int active_tool = 0;
+  PatternColor color = {0};
+  StitchType stitch = 0;
+
   ui->mouse_start_x = start_x;
   ui->mouse_start_y = start_y;
-  int column =
-      (int)((start_x + ui->camera_x) / app_state->pattern->stitch_size);
-  int row = (int)((start_y + ui->camera_y) / app_state->pattern->stitch_size);
-  RepeatTable *repeat_table = app_state->pattern->repeat_table;
 
   if (toolbar_state && toolbar_state->active_mode == MODE_MOVE) {
     ui->drag_start_x = ui->camera_x;
     ui->drag_start_y = ui->camera_y;
+    return;
   }
 
   if (toolbar_state && toolbar_state->active_mode == MODE_REPEAT) {
+    int row = (int)((start_y + ui->camera_y) / grid_data->stitch_size);
     toolbar_state->is_drawing_repeat = true;
     ui->temp_repeat_start = row;
     ui->temp_repeat_end = row;
+    return;
   }
 
-  if ((column >= 0 && column < grid_data->width) &&
-      (row >= 0 && row < grid_data->height)) {
+  int column = (int)((start_x + ui->camera_x) / grid_data->stitch_size);
+  int row = (int)((start_y + ui->camera_y) / grid_data->stitch_size);
+
+  if (column >= 0 && column < grid_data->width && row >= 0 &&
+      row < grid_data->height) {
     int index = (row * grid_data->width) + column;
 
-    if (grid_data->history_table->table_size ==
-        grid_data->history_table->current_position) {
-      size_t new_cap = grid_data->history_table->table_size * 2;
-      if (new_cap == 0) {
-        new_cap = 1;
-      }
-      grid_data->history_table->group = realloc(grid_data->history_table->group,
-                                                new_cap * sizeof(ActionGroup));
-      for (size_t i = grid_data->history_table->table_size; i < new_cap; i++) {
-        grid_data->history_table->group[i].group_size = 0;
-        grid_data->history_table->group[i].action = NULL;
-        grid_data->history_table->group[i].action_type = 0;
-      }
-      grid_data->history_table->table_size = new_cap;
+    if (toolbar_state) {
+      active_tool = toolbar_state->active_mode;
+      color = TO_PATTERN_COLOR(toolbar_state->active_color);
+      stitch = toolbar_state->active_stitch;
     }
-
-    if (grid_data->history_table->current_position <
-        grid_data->history_table->history_count) {
-      for (size_t i = grid_data->history_table->current_position;
-           i < grid_data->history_table->history_count; i++) {
-        free(grid_data->history_table->group[i].action);
-        grid_data->history_table->group[i].action = NULL;
-        grid_data->history_table->group[i].group_size = 0;
-      }
-      grid_data->history_table->history_count =
-          grid_data->history_table->current_position;
-    }
-    ActionGroup *agroup =
-        &grid_data->history_table
-             ->group[grid_data->history_table->current_position];
-
-    agroup->action_type = ACTION_STITCH_EDIT;
-    if (toolbar_state->active_mode != MODE_FILL) {
-      agroup->action = calloc(1, sizeof(StitchDelta));
-      agroup->group_size = 1;
-      agroup->action->cell_num = index;
-      agroup->action->before_state = grid_data->stitch_data[index];
-      apply_tool_to_cell(app_state, index);
-      agroup->action->after_state = grid_data->stitch_data[index];
-    } else if (toolbar_state->active_mode == MODE_FILL) {
-      agroup->group_size = 0;
-      agroup->action = NULL;
-      apply_tool_to_cell(app_state, index);
-    }
-    grid_data->history_table->current_position++;
-    grid_data->history_table->history_count++;
+    pattern_apply_stitch(grid_data, index, color, stitch);
   }
+  ui->redraw = true;
 }
 
 gboolean on_scroll(GtkEventControllerScroll *controller, double dx, double dy,

@@ -129,77 +129,61 @@ static void apply_tool_to_cell(AppState *app_state, int index) {
 // handles release events.
 void on_drag_end(GtkGestureDrag *gesture, double offset_x, double offset_y,
                  AppState *app_state) {
-  // g_print("1. Entered on_drag_end\n");
+  ToolbarState *toolbar_state = app_state->ui->toolbar_state;
   UiState *ui = app_state->ui;
-  PatternData *grid_data = app_state->pattern;
-  int column = (int)((ui->mouse_start_x + ui->camera_x) /
-                     app_state->pattern->stitch_size);
-  int row = (int)((ui->mouse_start_y + ui->camera_y) /
-                  app_state->pattern->stitch_size);
+  PatternData *pattern = app_state->pattern;
 
-  if ((column >= 0 && column < grid_data->width) &&
-      (row >= 0 && row < grid_data->height)) {
-    ToolbarState *toolbar_state = app_state->ui->toolbar_state;
-    PatternData *pattern_data = app_state->pattern;
-    HistoryTable *history = app_state->pattern->history_table;
-    RepeatTable *repeat_table = app_state->pattern->repeat_table;
-    ActionGroup *last_group = &history->group[history->current_position - 1];
-
-    if (toolbar_state && toolbar_state->active_mode == MODE_REPEAT) {
-      show_repeat_dialog(app_state->main_window, app_state);
-      return;
-    }
-    bool should_discard = false;
-    if (last_group->group_size == 0) {
-      should_discard = true;
-    } else if (last_group->group_size == 1) {
-      StitchDelta *first_delta =
-          &history->group[history->current_position - 1].action[0];
-      GdkRGBA before_color =
-          TO_GDK_RGBA(first_delta->before_state.stitch_color);
-      GdkRGBA after_color = TO_GDK_RGBA(first_delta->after_state.stitch_color);
-      if (last_group->group_size == 0 ||
-          (last_group->group_size == 1 && before_color.red == after_color.red &&
-           before_color.green == after_color.green &&
-           before_color.blue == after_color.blue &&
-           before_color.alpha == after_color.alpha &&
-           first_delta->before_state.stitch_type ==
-               first_delta->after_state.stitch_type)) {
-        should_discard = true;
-      }
-      if (should_discard) {
-        if (last_group->action != NULL) {
-          free(last_group->action);
-          last_group->action = NULL;
-        }
-        history->current_position -= 1;
-        history->history_count -= 1;
-      }
-    }
+  if (!toolbar_state || !ui || !pattern) {
+    return;
   }
+
+  // void unused variables to get rid of compiler warnings.
+  (void)gesture;
+  (void)offset_x;
+  (void)offset_y;
+
+  switch (toolbar_state->active_mode) {
+    // Finish drawing repeats.
+  case MODE_REPEAT:
+    ui->redraw = true;
+    break;
+  case MODE_MOVE:
+    break;
+  default:
+    pattern_apply_stitch_end(pattern);
+    ui->redraw = true;
+    break;
+  }
+  return;
 }
 
 // handles drag events like painting strokes and moving.
 void on_drag_update(GtkGestureDrag *gesture, double offset_x, double offset_y,
                     AppState *app_state) {
-  ToolbarState *toolbar_state = app_state->ui->toolbar_state;
-  UiState *ui = app_state->ui;
-  PatternData *grid_data = app_state->pattern;
-  GtkWidget *area =
-      gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-
-  double current_mouse_x = ui->mouse_start_x + offset_x;
-  double current_mouse_y = ui->mouse_start_y + offset_y;
-  int column = (int)((current_mouse_x + ui->camera_x) / grid_data->stitch_size);
-  int row = (int)((current_mouse_y + ui->camera_y) / grid_data->stitch_size);
-
-  if (toolbar_state && toolbar_state->active_mode == MODE_REPEAT) {
-    ui->temp_repeat_end = row;
-    ui->redraw = true;
+  if (!app_state || !app_state->ui || !app_state->pattern) {
     return;
   }
 
-  if (toolbar_state && toolbar_state->active_mode == MODE_MOVE) {
+  ToolbarState *toolbar_state = app_state->ui->toolbar_state;
+  UiState *ui = app_state->ui;
+  PatternData *grid_data = app_state->pattern;
+
+  if (!toolbar_state) {
+    return;
+  }
+
+  switch (toolbar_state->active_mode) {
+  case MODE_REPEAT: {
+    double current_mouse_y = ui->mouse_start_y + offset_y;
+    int row = (int)((current_mouse_y + ui->camera_y) / grid_data->stitch_size);
+    ui->temp_repeat_end = row;
+    ui->redraw = true;
+    break;
+  }
+
+  case MODE_MOVE: {
+    GtkWidget *area =
+        gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
     double new_camera_pos_x = ui->drag_start_x - offset_x;
     double new_camera_pos_y = ui->drag_start_y - offset_y;
     int width = gtk_widget_get_width(area);
@@ -210,74 +194,88 @@ void on_drag_update(GtkGestureDrag *gesture, double offset_x, double offset_y,
     ui->camera_x = MAX(0, MIN(new_camera_pos_x, MAX(0, max_x)));
     ui->camera_y = MAX(0, MIN(new_camera_pos_y, MAX(0, max_y)));
     ui->redraw = true;
-    return;
+    break;
   }
 
-  if (column >= 0 && column < grid_data->width && row >= 0 &&
-      row < grid_data->height) {
-    int index = (row * grid_data->width) + column;
+  default: {
+    double current_mouse_x = ui->mouse_start_x + offset_x;
+    double current_mouse_y = ui->mouse_start_y + offset_y;
+    int column =
+        (int)((current_mouse_x + ui->camera_x) / grid_data->stitch_size);
+    int row = (int)((current_mouse_y + ui->camera_y) / grid_data->stitch_size);
 
-    PatternColor color = {0};
-    StitchType stitch = 0;
+    if (column >= 0 && column < grid_data->width && row >= 0 &&
+        row < grid_data->height) {
+      int index = (row * grid_data->width) + column;
 
-    if (toolbar_state) {
-      color = TO_PATTERN_COLOR(toolbar_state->active_color);
-      stitch = toolbar_state->active_stitch;
+      PatternColor color = TO_PATTERN_COLOR(toolbar_state->active_color);
+      StitchType stitch = toolbar_state->active_stitch;
       if (stitch == STITCH_EMPTY) {
         stitch = STITCH_KNIT;
       }
-    }
 
-    pattern_apply_stitch_drag(grid_data, index, color, stitch);
-    ui->redraw = true;
+      pattern_apply_stitch_drag(grid_data, index, color, stitch);
+      ui->redraw = true;
+    }
+    break;
+  }
   }
 }
+
 // handles single click events like drawing a color,or drawing a stitch.
 void on_drag_begin(GtkGestureDrag *gesture, double start_x, double start_y,
                    AppState *app_state) {
+  if (!app_state || !app_state->ui || !app_state->pattern) {
+    return;
+  }
+
   UiState *ui = app_state->ui;
   PatternData *grid_data = app_state->pattern;
-  ToolbarState *toolbar_state = app_state->ui->toolbar_state;
+  ToolbarState *toolbar_state = ui->toolbar_state;
 
-  int active_tool = 0;
-  PatternColor color = {0};
-  StitchType stitch = 0;
+  if (!toolbar_state) {
+    return;
+  }
+
+  (void)gesture;
 
   ui->mouse_start_x = start_x;
   ui->mouse_start_y = start_y;
 
-  if (toolbar_state && toolbar_state->active_mode == MODE_MOVE) {
+  switch (toolbar_state->active_mode) {
+  case MODE_MOVE:
     ui->drag_start_x = ui->camera_x;
     ui->drag_start_y = ui->camera_y;
-    return;
-  }
+    break;
 
-  if (toolbar_state && toolbar_state->active_mode == MODE_REPEAT) {
+  case MODE_REPEAT: {
     int row = (int)((start_y + ui->camera_y) / grid_data->stitch_size);
     toolbar_state->is_drawing_repeat = true;
     ui->temp_repeat_start = row;
     ui->temp_repeat_end = row;
-    return;
+    break;
   }
 
-  int column = (int)((start_x + ui->camera_x) / grid_data->stitch_size);
-  int row = (int)((start_y + ui->camera_y) / grid_data->stitch_size);
+  default: {
+    int column = (int)((start_x + ui->camera_x) / grid_data->stitch_size);
+    int row = (int)((start_y + ui->camera_y) / grid_data->stitch_size);
 
-  if (column >= 0 && column < grid_data->width && row >= 0 &&
-      row < grid_data->height) {
-    int index = (row * grid_data->width) + column;
+    if (column >= 0 && column < grid_data->width && row >= 0 &&
+        row < grid_data->height) {
+      int index = (row * grid_data->width) + column;
 
-    if (toolbar_state) {
-      active_tool = toolbar_state->active_mode;
-      color = TO_PATTERN_COLOR(toolbar_state->active_color);
-      stitch = toolbar_state->active_stitch;
-      if (toolbar_state->active_stitch == STITCH_EMPTY) {
+      PatternColor color = TO_PATTERN_COLOR(toolbar_state->active_color);
+      StitchType stitch = toolbar_state->active_stitch;
+      if (stitch == STITCH_EMPTY) {
         stitch = STITCH_KNIT;
       }
+
+      pattern_apply_stitch(grid_data, index, color, stitch);
+      ui->redraw = true;
     }
-    pattern_apply_stitch(grid_data, index, color, stitch);
+    break;
   }
-  ui->redraw = true;
+  }
 }
 
 gboolean on_scroll(GtkEventControllerScroll *controller, double dx, double dy,

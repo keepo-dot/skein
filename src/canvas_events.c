@@ -187,49 +187,49 @@ void on_drag_update(GtkGestureDrag *gesture, double offset_x, double offset_y,
   PatternData *grid_data = app_state->pattern;
   GtkWidget *area =
       gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+
   double current_mouse_x = ui->mouse_start_x + offset_x;
   double current_mouse_y = ui->mouse_start_y + offset_y;
-  int column =
-      (int)((current_mouse_x + ui->camera_x) / app_state->pattern->stitch_size);
-  int row =
-      (int)((current_mouse_y + ui->camera_y) / app_state->pattern->stitch_size);
+  int column = (int)((current_mouse_x + ui->camera_x) / grid_data->stitch_size);
+  int row = (int)((current_mouse_y + ui->camera_y) / grid_data->stitch_size);
+
   if (toolbar_state && toolbar_state->active_mode == MODE_REPEAT) {
     ui->temp_repeat_end = row;
     ui->redraw = true;
+    return;
   }
 
-  if (toolbar_state->active_mode == MODE_MOVE) {
+  if (toolbar_state && toolbar_state->active_mode == MODE_MOVE) {
     double new_camera_pos_x = ui->drag_start_x - offset_x;
     double new_camera_pos_y = ui->drag_start_y - offset_y;
     int width = gtk_widget_get_width(area);
     int height = gtk_widget_get_height(area);
     int max_x = (grid_data->width * grid_data->stitch_size) - width;
     int max_y = (grid_data->height * grid_data->stitch_size) - height;
+
     ui->camera_x = MAX(0, MIN(new_camera_pos_x, MAX(0, max_x)));
     ui->camera_y = MAX(0, MIN(new_camera_pos_y, MAX(0, max_y)));
     ui->redraw = true;
-  } else if ((column >= 0 && column < grid_data->width) &&
-             (row >= 0 && row < grid_data->height)) {
-    int index = (row * grid_data->width) + column;
-    ActionGroup *agroup =
-        &grid_data->history_table
-             ->group[grid_data->history_table->current_position - 1];
+    return;
+  }
 
-    if (agroup->group_size > 0 &&
-        index == agroup->action[agroup->group_size - 1].cell_num) {
-      return;
-    } else {
-      agroup->group_size++;
-      agroup->action_type = ACTION_STITCH_EDIT;
-      agroup->action =
-          realloc(agroup->action, agroup->group_size * sizeof(StitchDelta));
-      agroup->action[agroup->group_size - 1].cell_num = index;
-      agroup->action[agroup->group_size - 1].before_state =
-          grid_data->stitch_data[index];
-      apply_tool_to_cell(app_state, index);
-      agroup->action[agroup->group_size - 1].after_state =
-          grid_data->stitch_data[index];
+  if (column >= 0 && column < grid_data->width && row >= 0 &&
+      row < grid_data->height) {
+    int index = (row * grid_data->width) + column;
+
+    PatternColor color = {0};
+    StitchType stitch = 0;
+
+    if (toolbar_state) {
+      color = TO_PATTERN_COLOR(toolbar_state->active_color);
+      stitch = toolbar_state->active_stitch;
+      if (stitch == STITCH_EMPTY) {
+        stitch = STITCH_KNIT;
+      }
     }
+
+    pattern_apply_stitch_drag(grid_data, index, color, stitch);
+    ui->redraw = true;
   }
 }
 // handles single click events like drawing a color,or drawing a stitch.

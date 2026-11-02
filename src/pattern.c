@@ -57,3 +57,48 @@ void pattern_apply_stitch(PatternData *pattern, int index, PatternColor color,
   history_table->history_count++;
   history_table->current_position++;
 }
+
+void pattern_apply_stitch_drag(PatternData *pattern, int index,
+                               PatternColor color, StitchType stitch) {
+  // Guard checks.
+  if (!pattern || !pattern->history_table || !pattern->stitch_data) {
+    return;
+  }
+  HistoryTable *history_table = pattern->history_table;
+
+  if (!history_table || !history_table->group ||
+      history_table->current_position == 0) {
+    return;
+  }
+  ActionGroup *agroup =
+      &history_table->group[history_table->current_position - 1];
+  // Ignore duplicate cells with no changes.
+  if (agroup->action && agroup->group_size > 0 &&
+      agroup->action[agroup->group_size - 1].cell_num == index) {
+    return;
+  }
+
+  StitchDelta *new_delta =
+      realloc(agroup->action, (agroup->group_size + 1) * sizeof(StitchDelta));
+  if (new_delta == NULL) {
+    fprintf(stderr, "Error: Failed to allocate memory for SitchDelta.\n");
+    return;
+  }
+  agroup->group_size++;
+  agroup->action_type = ACTION_STITCH_EDIT;
+  agroup->action = new_delta;
+  agroup->action[agroup->group_size - 1].cell_num = index;
+  agroup->action[agroup->group_size - 1].before_state =
+      pattern->stitch_data[index];
+  pattern->stitch_data[index].stitch_color = color;
+  pattern->stitch_data[index].stitch_type = stitch;
+  agroup->action[agroup->group_size - 1].after_state =
+      pattern->stitch_data[index];
+}
+
+void pattern_apply_stitch_end(PatternData *pattern) { return; }
+
+void pattern_apply_fill(PatternData *pattern, int index, PatternColor color,
+                        StitchType stitch) {
+  return;
+}

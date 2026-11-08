@@ -1,0 +1,29 @@
+name: CI Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang \
+            pkg-config \
+            libgtk-4-dev \
+            libjson-glib-dev
+
+      - name: Build with strict compiler warnings
+        run: |
+          make clean
+          make CFLAGS="-Wall -Wextra -Werror -g $(pkg-config --cflags gtk4 json-glib-1.0) -Iinclude"

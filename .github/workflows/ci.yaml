@@ -22,14 +22,13 @@ jobs:
           sudo apt-get install -y clang-format clang-tidy bear \
             libgtk-4-dev libcairo2-dev libjson-glib-dev pkg-config
 
-      - name: Check Formatting
+      - name: Check Formatting (clang-format)
         run: |
           find src include -name '*.[ch]' | xargs clang-format --dry-run --Werror
 
       - name: Generate Compilation Database & Run Clang-Tidy
         run: |
-          bear -- make clean && make
-          # Run clang-tidy on all project C sources
+          bear -- make all
           clang-tidy -p . src/*.c --warnings-as-errors='*'
 
   build-matrix:
@@ -48,12 +47,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgtk-4-dev libcairo2-dev libjson-glib-dev pkg-config
 
-      - name: Build with Strict Warnings
+      - name: Build Standard Binary
         run: |
           make clean
-          make CC=${{ matrix.compiler }} CFLAGS="-Wall -Wextra -Werror $(pkg-config --cflags gtk4 cairo json-glib-1.0) -Iinclude"
+          make CC=${{ matrix.compiler }} CFLAGS="-Wall -Wextra -Werror $(pkg-config --cflags gtk4 json-glib-1.0) -Iinclude"
 
-      - name: Build with ASan / UBSan
+      - name: Build Sanitized Binary (ASan / UBSan)
         run: |
-          make clean
-          make CC=${{ matrix.compiler }} CFLAGS="-Wall -Wextra -Werror -fsanitize=address,undefined -g $(pkg-config --cflags gtk4 cairo json-glib-1.0) -Iinclude" LDFLAGS="-fsanitize=address,undefined"
+          make sanitize CC=${{ matrix.compiler }}

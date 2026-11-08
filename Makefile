@@ -1,11 +1,11 @@
 # Sanitizer Flags
-SANITIZER_FLAGS = -fsanitize=address,undefined
+SANITIZER_FLAGS = -fsanitize=address,undefined -fno-omit-frame-pointer
 
-# Compiler and Flags
-CC = clang
-# -Iinclude tells the compiler to look in your include folder for .h files
-CFLAGS = -Wall -Wextra -g $(shell pkg-config --cflags gtk4 json-glib-1.0) -Iinclude #$(SANITIZER_FLAGS)
-LIBS = $(shell pkg-config --libs gtk4 json-glib-1.0) #$(SANITIZER_FLAGS)
+# Compiler and Flags (CC ?= allows overriding from CI environment)
+CC ?= clang
+CFLAGS_BASE = -Wall -Wextra -g $(shell pkg-config --cflags gtk4 json-glib-1.0) -Iinclude
+CFLAGS = $(CFLAGS_BASE)
+LIBS = $(shell pkg-config --libs gtk4 json-glib-1.0)
 
 # Directory Setup
 SRC_DIR = src
@@ -19,7 +19,7 @@ SRCS = $(SRC_DIR)/skein.c \
        $(SRC_DIR)/toolbar.c \
        $(SRC_DIR)/pattern.c \
        $(SRC_DIR)/skein_window.c \
-			 $(SRC_DIR)/dialogs.c \
+       $(SRC_DIR)/dialogs.c \
        $(SRC_DIR)/utils.c \
        $(SRC_DIR)/resources.c \
        $(SRC_DIR)/file_io.c
@@ -42,6 +42,11 @@ RESET  := \033[0m
 
 # Default rule
 all: $(TARGET)
+
+# Dedicated sanitizer target: appends flags to both compiler and linker
+sanitize: CFLAGS += $(SANITIZER_FLAGS)
+sanitize: LIBS += $(SANITIZER_FLAGS)
+sanitize: clean $(TARGET)
 
 # Link the object files into the final binary
 $(TARGET): $(OBJS) | $(BIN_DIR)
@@ -69,4 +74,4 @@ clean:
 	@rm -rf $(OBJ_DIR) $(BIN_DIR)
 	@printf "$(BOLD)$(GREEN)[OK]$(RESET) Workspace clean.\n"
 
-.PHONY: all clean
+.PHONY: all clean sanitize

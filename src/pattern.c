@@ -31,7 +31,7 @@ static void history_truncate_future(HistoryTable *ht) {
     return;
   }
   if (ht->current_position < ht->history_count) {
-    for (int i = ht->current_position; i < ht->history_count; i++) {
+    for (size_t i = ht->current_position; i < ht->history_count; i++) {
       free(ht->group[i].action);
       ht->group[i].action = NULL;
       ht->group[i].group_size = 0;

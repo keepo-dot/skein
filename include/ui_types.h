@@ -1,6 +1,7 @@
 #ifndef UI_TYPES_H
 #define UI_TYPES_H
 
+#include <stddef.h>
 #define TO_GDK_RGBA(c) ((GdkRGBA){(c).red, (c).green, (c).blue, (c).alpha})
 #define TO_PATTERN_COLOR(c)                                                    \
   ((PatternColor){(c).red, (c).green, (c).blue, (c).alpha})
@@ -60,7 +61,7 @@ typedef struct {
   int temp_repeat_start;
   int temp_repeat_end;
   GdkPixbuf *repeat_icon;
-  int hovered_repeat_index;
+  size_t hovered_repeat_index;
 } UiState;
 
 typedef struct {

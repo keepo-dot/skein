@@ -1,10 +1,12 @@
 #include "pattern.h"
 #include "pattern_types.h"
-#include "resources.h"
 #include "ui_types.h"
 #include "utils.h"
+#include <stddef.h>
 
 gboolean undo_action(GtkWidget *widget, GVariant *args, gpointer app_state) {
+  (void)widget;
+  (void)args;
   AppState *state = (AppState *)app_state;
   HistoryTable *history_table = state->pattern->history_table;
   RepeatTable *repeat_table = state->pattern->repeat_table;
@@ -43,6 +45,8 @@ gboolean undo_action(GtkWidget *widget, GVariant *args, gpointer app_state) {
 }
 
 gboolean redo_action(GtkWidget *widget, GVariant *args, gpointer app_state) {
+  (void)widget;
+  (void)args;
   AppState *state = (AppState *)app_state;
   HistoryTable *history_table = state->pattern->history_table;
   RepeatTable *repeat_table = state->pattern->repeat_table;
@@ -51,7 +55,7 @@ gboolean redo_action(GtkWidget *widget, GVariant *args, gpointer app_state) {
     if (history_table->current_position < history_table->table_size) {
       ActionGroup *agroup =
           &history_table->group[history_table->current_position];
-      for (int i = 0; i < agroup->group_size; i++) {
+      for (size_t i = 0; i < agroup->group_size; i++) {
         StitchData *data =
             &state->pattern->stitch_data[agroup->action[i].cell_num];
         data->stitch_color = agroup->action[i].after_state.stitch_color;
@@ -250,6 +254,7 @@ void on_drag_begin(GtkGestureDrag *gesture, double start_x, double start_y,
 
 gboolean on_scroll(GtkEventControllerScroll *controller, double dx, double dy,
                    AppState *app_state) {
+  (void)dx;
   UiState *ui = app_state->ui;
   GdkModifierType state = gtk_event_controller_get_current_event_state(
       GTK_EVENT_CONTROLLER(controller));
@@ -287,12 +292,14 @@ gboolean on_scroll(GtkEventControllerScroll *controller, double dx, double dy,
 
 gboolean on_motion(GtkEventControllerMotion *controller, double mx, double my,
                    AppState *app_state) {
+  (void)controller;
+  (void)mx;
   UiState *ui = app_state->ui;
   PatternData *pattern = app_state->pattern;
   RepeatTable *repeat_table = app_state->pattern->repeat_table;
   int hover_row = (int)((my + ui->camera_y) / pattern->stitch_size);
   int current_hit = -1;
-  for (int i = 0; i < app_state->pattern->repeat_table->num_repeats; i++) {
+  for (size_t i = 0; i < app_state->pattern->repeat_table->num_repeats; i++) {
     int s_row = repeat_table->repeat_section[i].start_row;
     int e_row = repeat_table->repeat_section[i].end_row;
     int top_row = (s_row < e_row) ? s_row : e_row;
@@ -302,7 +309,7 @@ gboolean on_motion(GtkEventControllerMotion *controller, double mx, double my,
       break;
     }
   }
-  if (current_hit != ui->hovered_repeat_index) {
+  if (current_hit != (int)ui->hovered_repeat_index) {
     ui->hovered_repeat_index = current_hit;
     ui->redraw = true;
   }

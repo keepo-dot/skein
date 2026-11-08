@@ -4,10 +4,12 @@
 #include "gio/gio.h"
 #include "glib-object.h"
 #include "glib.h"
+#include "glibconfig.h"
 #include "resources.h"
 #include "ui_types.h"
 #include <gtk/gtk.h>
 #include <json-glib-1.0/json-glib/json-glib.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -111,6 +113,7 @@ void fill_cells(AppState *app_state) {
 
 GdkPixbuf *fetch_icon(const char *icon_name, int width, int height, int scale,
                       gboolean preserve_aspect_ratio, GError **error) {
+  (void)preserve_aspect_ratio;
   GdkDisplay *display = gdk_display_get_default();
   if (!display) {
     g_set_error(error, G_IO_ERROR, G_IO_ERROR_FAILED,
@@ -159,6 +162,9 @@ GdkPixbuf *fetch_icon(const char *icon_name, int width, int height, int scale,
 
 void draw_repeat_outlines(GtkDrawingArea *area, cairo_t *cr, int w, int h,
                           gpointer user_data) {
+  (void)area;
+  (void)w;
+  (void)h;
   AppState *app_state = (AppState *)user_data;
   RepeatTable *repeat_table = app_state->pattern->repeat_table;
 
@@ -192,14 +198,19 @@ void draw_repeat_outlines(GtkDrawingArea *area, cairo_t *cr, int w, int h,
         (app_state->pattern->width * app_state->pattern->stitch_size) -
         app_state->ui->camera_x;
     double icon_w = r_edge - gdk_pixbuf_get_width(app_state->ui->repeat_icon);
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gdk_cairo_set_source_pixbuf(cr, GDK_PIXBUF(app_state->ui->repeat_icon),
                                 icon_w, y_pos);
+    G_GNUC_END_IGNORE_DEPRECATIONS
     cairo_paint(cr);
   }
 }
 
 void draw_color_swatch(GtkDrawingArea *area, cairo_t *cr, int w, int h,
                        gpointer button_color) {
+  (void)area;
+  (void)w;
+  (void)h;
   GdkRGBA *paint_color = (GdkRGBA *)button_color;
   gdk_cairo_set_source_rgba(cr, paint_color);
   cairo_paint(cr);
@@ -207,6 +218,9 @@ void draw_color_swatch(GtkDrawingArea *area, cairo_t *cr, int w, int h,
 
 void draw_stitch_swatch(GtkDrawingArea *area, cairo_t *cr, int w, int h,
                         gpointer user_data) {
+  (void)area;
+  (void)w;
+  (void)h;
   int stitch_type = GPOINTER_TO_INT(user_data);
 
   cairo_set_line_width(cr, 2.0);
@@ -333,10 +347,13 @@ void pattern_reset_size(PatternData *pattern, int new_width, int new_height) {
 gboolean on_repeat_hover(GtkWidget *draw_area, gint mouse_x, gint mouse_y,
                          gboolean keyboard_trigger, GtkTooltip *tooltip,
                          AppState *app_state) {
+  (void)draw_area;
+  (void)mouse_x;
+  (void)keyboard_trigger;
   RepeatTable *repeat_table = app_state->pattern->repeat_table;
   int row_idx =
       ((mouse_y - app_state->ui->offset_y) / app_state->pattern->stitch_size);
-  for (int i = 0; i < repeat_table->num_repeats; i++) {
+  for (size_t i = 0; i < repeat_table->num_repeats; i++) {
     if (row_idx >= repeat_table->repeat_section[i].start_row &&
         row_idx <= repeat_table->repeat_section[i].end_row) {
       gtk_tooltip_set_text(tooltip,
@@ -348,7 +365,6 @@ gboolean on_repeat_hover(GtkWidget *draw_area, gint mouse_x, gint mouse_y,
 }
 
 void on_repeat_confirm(GtkWidget *button, AppState *app_state) {
-  PatternData *pattern_data = app_state->pattern;
   RepeatTable *repeat_table = app_state->pattern->repeat_table;
   HistoryTable *history = app_state->pattern->history_table;
 
@@ -389,6 +405,7 @@ void on_repeat_confirm(GtkWidget *button, AppState *app_state) {
 }
 
 void show_repeat_dialog(GtkWidget *main_window, AppState *app_state) {
+  (void)main_window;
 
   GtkWidget *repeat_dialog = gtk_window_new();
   gtk_window_set_modal(GTK_WINDOW(repeat_dialog), true);

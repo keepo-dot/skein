@@ -221,7 +221,6 @@ static void on_color_selection(GObject *color_dialog, GAsyncResult *res,
     g_error_free(error);
     return;
   }
-  GdkRGBA *existing_color = g_object_get_data(G_OBJECT(button), "button-color");
   g_object_set_data(G_OBJECT(button), "button-color", chosen_color);
   GtkWidget *draw_area = gtk_button_get_child(GTK_BUTTON(button));
   gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(draw_area), draw_color_swatch,
@@ -231,6 +230,10 @@ static void on_color_selection(GObject *color_dialog, GAsyncResult *res,
 
 static void on_color_rc(GtkGestureClick *rc_listener, gint n_press, gdouble x,
                         gdouble y, gpointer state) {
+  (void)state;
+  (void)n_press;
+  (void)x;
+  (void)y;
   GtkWidget *listener_widget =
       gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(rc_listener));
   GtkWidget *main_window = (GtkWidget *)gtk_widget_get_root(listener_widget);
@@ -240,7 +243,6 @@ static void on_color_rc(GtkGestureClick *rc_listener, gint n_press, gdouble x,
   gtk_color_dialog_choose_rgba(color_dialog, GTK_WINDOW(main_window),
                                button_color, NULL, on_color_selection,
                                listener_widget);
-  AppState *app_state = state;
 }
 
 static GtkWidget *toggle_button_group_new(

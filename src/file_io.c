@@ -265,7 +265,7 @@ JsonBuilder *pattern_json_builder(PatternData *pattern) {
   json_builder_add_int_value(builder, repeat_table->num_repeats);
   json_builder_set_member_name(builder, "sections");
   json_builder_begin_array(builder);
-  for (int i = 0; i < repeat_table->num_repeats; i++) {
+  for (size_t i = 0; i < repeat_table->num_repeats; i++) {
     json_builder_begin_array(builder);
     json_builder_add_int_value(builder,
                                repeat_table->repeat_section[i].start_row);

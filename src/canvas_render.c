@@ -5,6 +5,7 @@
 // checks if grid needs redrawn, if so, calls a redraw.
 static gboolean needs_redraw(GtkWidget *widget, GdkFrameClock *frame_clock,
                              gpointer ui_p) {
+  (void)frame_clock;
   UiState *ui = (UiState *)ui_p;
   if (ui->redraw == true) {
     gtk_widget_queue_draw(widget);

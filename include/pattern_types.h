@@ -52,8 +52,8 @@ typedef struct {
 typedef struct {
   size_t table_size;
   ActionGroup *group;
-  int current_position;
-  int history_count;
+  size_t current_position;
+  size_t history_count;
 } HistoryTable;
 
 typedef struct {
@@ -64,7 +64,7 @@ typedef struct {
 
 typedef struct {
   size_t table_size;
-  int num_repeats;
+  size_t num_repeats;
   RepeatSection *repeat_section;
 } RepeatTable;
 

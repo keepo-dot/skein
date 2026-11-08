@@ -1,32 +1,59 @@
-name: CI Build
+name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ "main" ]
-
+    branches: [ main, master ]
 permissions:
   contents: read
 
 jobs:
-  build:
+  lint-and-format:
+    name: Lint & Style
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Install system dependencies
+      - name: Install Linting Tools & Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            clang \
-            pkg-config \
-            libgtk-4-dev \
-            libjson-glib-dev
+          sudo apt-get install -y clang-format clang-tidy bear \
+            libgtk-4-dev libcairo2-dev libjson-glib-dev pkg-config
 
-      - name: Build with strict compiler warnings
+      - name: Check Formatting
+        run: |
+          find src include -name '*.[ch]' | xargs clang-format --dry-run --Werror
+
+      - name: Generate Compilation Database & Run Clang-Tidy
+        run: |
+          bear -- make clean skein
+          # Run clang-tidy on all project C sources
+          clang-tidy -p . src/*.c --warnings-as-errors='*'
+
+  build-matrix:
+    name: Build (${{ matrix.compiler }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-4-dev libcairo2-dev libjson-glib-dev pkg-config
+
+      - name: Build with Strict Warnings
         run: |
           make clean
-          make CFLAGS="-Wall -Wextra -Werror -g $(pkg-config --cflags gtk4 json-glib-1.0) -Iinclude"
+          make CC=${{ matrix.compiler }} CFLAGS="-Wall -Wextra -Werror $(pkg-config --cflags gtk4 cairo json-glib-1.0) -Iinclude"
+
+      - name: Build with ASan / UBSan
+        run: |
+          make clean
+          make CC=${{ matrix.compiler }} CFLAGS="-Wall -Wextra -Werror -fsanitize=address,undefined -g $(pkg-config --cflags gtk4 cairo json-glib-1.0) -Iinclude" LDFLAGS="-fsanitize=address,undefined"

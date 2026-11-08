@@ -1,10 +1,14 @@
+#include "toolbar.h"
+#include "canvas_render.h"
+#include "dialogs.h"
 #include "file_io.h"
-#include "gdk/gdk.h"
-#include "gio/gio.h"
-#include "glib-object.h"
-#include "glib.h"
+#include "pattern.h"
 #include "resources.h"
-#include "utils.h"
+#include "ui_types.h"
+#include <gdk/gdk.h>
+#include <gio/gio.h>
+#include <glib-object.h>
+#include <glib.h>
 #include <gtk/gtk.h>
 #include <json-glib-1.0/json-glib/json-glib.h>
 #include <stddef.h>
@@ -33,9 +37,9 @@ static void on_save_dialog_finish(GObject *file_dialog, GAsyncResult *save_file,
   GtkAlertDialog *alert = gtk_alert_dialog_new("Pattern saved successfully!");
   gtk_alert_dialog_show(alert, GTK_WINDOW(main_window));
   g_object_unref(alert);
-
   g_object_unref(file_to_save);
 }
+
 static void on_load_dialog_finish(GObject *file_dialog,
                                   GAsyncResult *file_to_open,
                                   gpointer app_state_p) {
@@ -78,7 +82,6 @@ static void on_empty_save_response(GObject *source_object, GAsyncResult *res,
   GError *error = NULL;
 
   int response = gtk_alert_dialog_choose_finish(alert, res, &error);
-
   if (error) {
     g_print("Error: %s\n", error->message);
     g_error_free(error);
@@ -104,21 +107,16 @@ static void on_action_clicked(GtkButton *button, gpointer app_state) {
     break;
   case MODE_SAVEFILE: {
     if (!is_pattern_empty(state->pattern)) {
-      // Normal save flow if pattern has data
       GtkFileDialog *save_dialog = setup_file_dialog("Save Pattern");
       gtk_file_dialog_save(save_dialog, GTK_WINDOW(main_window), NULL,
                            on_save_dialog_finish, app_state);
     } else {
-      // Warning flow if pattern is empty
       GtkAlertDialog *empty_alert = gtk_alert_dialog_new(
           "The pattern is empty. Do you still want to save?");
-
-      // Define buttons: Cancel (0) and Save Anyway (1)
       const char *buttons[] = {"Cancel", "Save Anyway", NULL};
       gtk_alert_dialog_set_buttons(empty_alert, buttons);
       gtk_alert_dialog_set_cancel_button(empty_alert, 0);
       gtk_alert_dialog_set_default_button(empty_alert, 1);
-
       gtk_alert_dialog_choose(empty_alert, GTK_WINDOW(main_window), NULL,
                               on_empty_save_response, app_state);
       g_object_unref(empty_alert);
@@ -129,7 +127,6 @@ static void on_action_clicked(GtkButton *button, gpointer app_state) {
     GtkFileDialog *load_dialog = setup_file_dialog("Load Pattern");
     gtk_file_dialog_open(load_dialog, GTK_WINDOW(main_window), NULL,
                          on_load_dialog_finish, app_state);
-
     break;
   }
   }
@@ -162,7 +159,6 @@ static void on_tool_toggled(GtkToggleButton *button, gpointer toolbar_state) {
       gtk_widget_set_visible(state->palette_container, true);
       gtk_widget_set_visible(state->stitch_type_container, false);
       break;
-
     case MODE_STITCH:
       gtk_widget_set_visible(state->stitch_type_container, true);
       gtk_widget_set_visible(state->palette_container, false);
@@ -173,7 +169,6 @@ static void on_tool_toggled(GtkToggleButton *button, gpointer toolbar_state) {
     case MODE_FILL:
       gtk_widget_set_visible(state->palette_container, true);
       break;
-
     default:
       gtk_widget_set_visible(state->palette_container, false);
       gtk_widget_set_visible(state->stitch_type_container, false);
@@ -181,38 +176,11 @@ static void on_tool_toggled(GtkToggleButton *button, gpointer toolbar_state) {
   }
 }
 
-static GtkWidget *
-action_button_group_new(ButtonInfo *btn_group, GCallback callback_func,
-                        gpointer app_state, const char *data_key, size_t count,
-                        bool add_separator_left, bool add_seperator_right,
-                        int alignment) {
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  if (alignment == 1) {
-    gtk_widget_set_halign(box, GTK_ALIGN_END);
-  } else if (alignment == 0) {
-    gtk_widget_set_halign(box, GTK_ALIGN_START);
-  }
-  if (add_separator_left) {
-    gtk_box_append(GTK_BOX(box), gtk_separator_new(GTK_ORIENTATION_VERTICAL));
-  }
-  for (size_t i = 0; i < count; i++) {
-    ButtonInfo *current_button = &btn_group[i];
-    GtkWidget *button = create_button(current_button);
-    g_object_set_data(G_OBJECT(button), data_key, current_button->type_ptr);
-    g_signal_connect(button, "clicked", callback_func, app_state);
-    gtk_box_append(GTK_BOX(box), button);
-  }
-  if (add_seperator_right) {
-    gtk_box_append(GTK_BOX(box), gtk_separator_new(GTK_ORIENTATION_VERTICAL));
-  }
-  return box;
-}
 static void on_color_selection(GObject *color_dialog, GAsyncResult *res,
                                gpointer button) {
   GError *error = NULL;
   GtkWidget *main_window = (GtkWidget *)gtk_widget_get_root(GTK_WIDGET(button));
-  GdkRGBA *chosen_color;
-  chosen_color = gtk_color_dialog_choose_rgba_finish(
+  GdkRGBA *chosen_color = gtk_color_dialog_choose_rgba_finish(
       GTK_COLOR_DIALOG(color_dialog), res, &error);
   if (error != NULL) {
     GtkAlertDialog *err_box =
@@ -243,6 +211,72 @@ static void on_color_rc(GtkGestureClick *rc_listener, gint n_press, gdouble x,
   gtk_color_dialog_choose_rgba(color_dialog, GTK_WINDOW(main_window),
                                button_color, NULL, on_color_selection,
                                listener_widget);
+}
+
+static void draw_toolbar_icon(GtkDrawingArea *area, cairo_t *cr, int width,
+                              int height, gpointer symbol_color) {
+  GdkRGBA theme_color;
+  gtk_widget_get_color(GTK_WIDGET(area), &theme_color);
+  gdk_cairo_set_source_rgba(cr, &theme_color);
+  draw_stitch_swatch(area, cr, width, height, symbol_color);
+}
+
+GtkWidget *create_button(ButtonInfo *info) {
+  GtkWidget *button = NULL;
+  if (info->is_toggle) {
+    button = gtk_toggle_button_new();
+  } else {
+    button = gtk_button_new();
+  }
+
+  if (info->icon_name) {
+    gtk_button_set_icon_name(GTK_BUTTON(button), info->icon_name);
+  } else if (info->button_color != NULL) {
+    GtkWidget *button_draw_area = gtk_drawing_area_new();
+    gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(button_draw_area),
+                                   draw_color_swatch,
+                                   (gpointer)info->button_color, NULL);
+    gtk_button_set_child(GTK_BUTTON(button), button_draw_area);
+    gtk_widget_set_size_request(button_draw_area, 16, 16);
+  } else if (info->stitch_type != 0) {
+    GtkWidget *button_draw_area = gtk_drawing_area_new();
+    gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(button_draw_area),
+                                   draw_toolbar_icon,
+                                   (gpointer)info->stitch_type, NULL);
+    gtk_button_set_child(GTK_BUTTON(button), button_draw_area);
+    gtk_widget_set_size_request(button_draw_area, 16, 16);
+  } else if (info->label != NULL) {
+    gtk_button_set_label(GTK_BUTTON(button), info->label);
+  }
+  gtk_widget_set_tooltip_text(button, info->label);
+  return button;
+}
+
+static GtkWidget *
+action_button_group_new(ButtonInfo *btn_group, GCallback callback_func,
+                        gpointer app_state, const char *data_key, size_t count,
+                        bool add_separator_left, bool add_seperator_right,
+                        int alignment) {
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  if (alignment == 1) {
+    gtk_widget_set_halign(box, GTK_ALIGN_END);
+  } else if (alignment == 0) {
+    gtk_widget_set_halign(box, GTK_ALIGN_START);
+  }
+  if (add_separator_left) {
+    gtk_box_append(GTK_BOX(box), gtk_separator_new(GTK_ORIENTATION_VERTICAL));
+  }
+  for (size_t i = 0; i < count; i++) {
+    ButtonInfo *current_button = &btn_group[i];
+    GtkWidget *button = create_button(current_button);
+    g_object_set_data(G_OBJECT(button), data_key, current_button->type_ptr);
+    g_signal_connect(button, "clicked", callback_func, app_state);
+    gtk_box_append(GTK_BOX(box), button);
+  }
+  if (add_seperator_right) {
+    gtk_box_append(GTK_BOX(box), gtk_separator_new(GTK_ORIENTATION_VERTICAL));
+  }
+  return box;
 }
 
 static GtkWidget *toggle_button_group_new(
@@ -288,43 +322,52 @@ static GtkWidget *toggle_button_group_new(
   return box;
 }
 
+GtkFileDialog *setup_file_dialog(char *window_title) {
+  GListStore *filter_list = g_list_store_new(GTK_TYPE_FILE_FILTER);
+  GtkFileDialog *new_dialog = gtk_file_dialog_new();
+  gtk_file_dialog_set_title(new_dialog, window_title);
+  GtkFileFilter *file_filter = gtk_file_filter_new();
+  gtk_file_filter_set_name(file_filter, FILTER_NAME);
+  gtk_file_filter_add_pattern(file_filter, FILE_TYPE);
+  g_list_store_append(filter_list, file_filter);
+  gtk_file_dialog_set_default_filter(new_dialog, file_filter);
+  g_object_unref(filter_list);
+  return new_dialog;
+}
+
 GtkWidget *create_toolbar(AppState *app_state) {
   ToolbarState *toolbar_state = app_state->ui->toolbar_state;
-  // create toolbar cointainer.
   GtkWidget *toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  // Create tool buttons.
   toolbar_state->tool_container = toggle_button_group_new(
       toolbar_buttons_mode, G_CALLBACK(on_tool_toggled), NULL, toolbar_state,
       "tool-type", MODE_BUTTON_COUNT, false, true, 0);
 
-  // create palette buttons.
   toolbar_state->palette_container = toggle_button_group_new(
       toolbar_buttons_color, G_CALLBACK(on_color_toggled),
       G_CALLBACK(on_color_rc), toolbar_state, "button-color",
       COLOR_BUTTON_COUNT, true, false, 0);
 
-  // create stitch buttons.
   toolbar_state->stitch_type_container = toggle_button_group_new(
       toolbar_buttons_stitch_type, G_CALLBACK(on_stitch_toggled), NULL,
       toolbar_state, "stitch-type", STITCH_BUTTON_COUNT, true, false, 0);
-  // create file io buttons.
+
   toolbar_state->fileio_container = action_button_group_new(
       toolbar_buttons_fileio, G_CALLBACK(on_action_clicked), app_state,
       "action-type", FILEIO_BUTTON_COUNT, false, true, 1);
   gtk_widget_set_hexpand(toolbar_state->fileio_container, true);
-  // add containers to toolbar.
+
   gtk_box_append(GTK_BOX(toolbar), toolbar_state->tool_container);
   gtk_box_append(GTK_BOX(toolbar), toolbar_state->palette_container);
   gtk_box_append(GTK_BOX(toolbar), toolbar_state->stitch_type_container);
   gtk_box_append(GTK_BOX(toolbar), toolbar_state->fileio_container);
-  // sets the move tool to active on startup.
+
   GtkWidget *first_tool =
       gtk_widget_get_first_child(toolbar_state->tool_container);
   if (first_tool && GTK_IS_TOGGLE_BUTTON(first_tool)) {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(first_tool), true);
   }
-  // load startup screen, will put in its own place later.
+
   pattern_json_load("startup.skn", app_state->pattern);
   return toolbar;
 }

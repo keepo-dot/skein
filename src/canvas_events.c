@@ -1,7 +1,7 @@
+#include "dialogs.h"
 #include "pattern.h"
 #include "pattern_types.h"
 #include "ui_types.h"
-#include "utils.h"
 #include <stddef.h>
 
 gboolean undo_action(GtkWidget *widget, GVariant *args, gpointer app_state) {
@@ -97,14 +97,15 @@ void on_drag_end(GtkGestureDrag *gesture, double offset_x, double offset_y,
   (void)offset_y;
 
   switch (toolbar_state->active_mode) {
-    // Finish drawing repeats.
-  case MODE_REPEAT:
-    ui->redraw = true;
-    break;
   case MODE_MOVE:
     break;
   case MODE_FILL:
     break;
+  case MODE_REPEAT:
+    show_repeat_dialog(app_state->main_window, app_state);
+    ui->redraw = true;
+    break;
+
   default:
     pattern_apply_stitch_end(pattern);
     ui->redraw = true;
@@ -133,7 +134,6 @@ void on_drag_update(GtkGestureDrag *gesture, double offset_x, double offset_y,
     double current_mouse_y = ui->mouse_start_y + offset_y;
     int row = (int)((current_mouse_y + ui->camera_y) / pattern->stitch_size);
     ui->temp_repeat_end = row;
-    show_repeat_dialog(app_state->main_window, app_state);
     ui->redraw = true;
     break;
   }

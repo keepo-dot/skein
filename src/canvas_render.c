@@ -1,7 +1,6 @@
 #include "canvas_events.h"
 #include "resources.h"
 #include "ui_types.h"
-#include "utils.h"
 // checks if grid needs redrawn, if so, calls a redraw.
 static gboolean needs_redraw(GtkWidget *widget, GdkFrameClock *frame_clock,
                              gpointer ui_p) {
@@ -14,6 +13,125 @@ static gboolean needs_redraw(GtkWidget *widget, GdkFrameClock *frame_clock,
 
   return G_SOURCE_CONTINUE; // tells gtk to run the function again.
 }
+
+void draw_repeat_outlines(GtkDrawingArea *area, cairo_t *cr, int w, int h,
+                          gpointer user_data) {
+  (void)area;
+  (void)w;
+  (void)h;
+  AppState *app_state = (AppState *)user_data;
+  RepeatTable *repeat_table = app_state->pattern->repeat_table;
+
+  if (repeat_table->num_repeats == 0)
+    return;
+  // draw repeat outline
+  for (size_t i = 0; i < repeat_table->num_repeats; i++) {
+    if (i == app_state->ui->hovered_repeat_index) {
+      cairo_set_line_width(cr, 4.0);
+      GdkRGBA hover_color = {0.85, 0.55, 0.20, 1.0};
+      gdk_cairo_set_source_rgba(cr, &hover_color);
+    } else {
+      cairo_set_line_width(cr, 3.0);
+      GdkRGBA repeat_color = {0.96, 0.84, 0.15, 1.0};
+      gdk_cairo_set_source_rgba(cr, &repeat_color);
+    }
+    double stitch_size = app_state->pattern->stitch_size;
+    int s_row = repeat_table->repeat_section[i].start_row;
+    int e_row = repeat_table->repeat_section[i].end_row;
+    int top_row = (s_row < e_row) ? s_row : e_row;
+    int bottom_row = (s_row < e_row) ? e_row : s_row;
+    int num_rows = (bottom_row - top_row) + 1;
+    double x_pos = 0.0 - app_state->ui->camera_x;
+    double y_pos = (top_row * stitch_size) - app_state->ui->camera_y;
+    double rect_w = stitch_size * app_state->pattern->width;
+    double rect_h = stitch_size * num_rows;
+    cairo_rectangle(cr, x_pos, y_pos, rect_w, rect_h);
+    cairo_stroke(cr);
+    // draw icon in top right corner.
+    double r_edge =
+        (app_state->pattern->width * app_state->pattern->stitch_size) -
+        app_state->ui->camera_x;
+    double icon_w = r_edge - gdk_pixbuf_get_width(app_state->ui->repeat_icon);
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+    gdk_cairo_set_source_pixbuf(cr, GDK_PIXBUF(app_state->ui->repeat_icon),
+                                icon_w, y_pos);
+    G_GNUC_END_IGNORE_DEPRECATIONS
+    cairo_paint(cr);
+  }
+}
+
+void draw_color_swatch(GtkDrawingArea *area, cairo_t *cr, int w, int h,
+                       gpointer button_color) {
+  (void)area;
+  (void)w;
+  (void)h;
+  GdkRGBA *paint_color = (GdkRGBA *)button_color;
+  gdk_cairo_set_source_rgba(cr, paint_color);
+  cairo_paint(cr);
+}
+
+void draw_stitch_swatch(GtkDrawingArea *area, cairo_t *cr, int w, int h,
+                        gpointer user_data) {
+  (void)area;
+  (void)w;
+  (void)h;
+  int stitch_type = GPOINTER_TO_INT(user_data);
+
+  cairo_set_line_width(cr, 2.0);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+
+  double center_x = w / 2.0;
+  double center_y = h / 2.0;
+  double size = w * 0.6; // Scale relative to button size
+
+  switch (stitch_type) {
+  case STITCH_KNIT: // No line, knit is default.
+    break;
+
+  case STITCH_PURL: // Horizontal Dash (or Dot)
+    cairo_move_to(cr, center_x - (size / 2), center_y);
+    cairo_line_to(cr, center_x + (size / 2), center_y);
+    cairo_stroke(cr);
+    break;
+
+  case STITCH_M1: // New: A twisted loop "e"
+    // Top loop
+    cairo_arc(cr, center_x, center_y - (size / 4), size / 4, 0, 2 * G_PI);
+    // Legs crossing at bottom
+    cairo_move_to(cr, center_x - (size / 4), center_y + (size / 2));
+    cairo_line_to(cr, center_x + (size / 4), center_y); // cross up
+    cairo_stroke(cr);
+    break;
+
+  case STITCH_SLIP: // New: A "V" shape
+    cairo_move_to(cr, center_x - (size / 3), center_y - (size / 3));
+    cairo_line_to(cr, center_x, center_y + (size / 3)); // Down to point
+    cairo_line_to(cr, center_x + (size / 3),
+                  center_y - (size / 3)); // Up to right
+    cairo_stroke(cr);
+    break;
+
+  case STITCH_YO: // Circle
+    cairo_arc(cr, center_x, center_y, size / 3, 0, 2 * G_PI);
+    cairo_stroke(cr);
+    break;
+
+  case STITCH_K2TOG: // Right Lean /
+    cairo_move_to(cr, center_x + (size / 2),
+                  center_y - (size / 2)); // Top Right
+    cairo_line_to(cr, center_x - (size / 2), center_y + (size / 2)); // Bot Left
+    cairo_stroke(cr);
+    break;
+
+  case STITCH_SSK: // Left Lean \ (Backslash)
+    cairo_move_to(cr, center_x - (size / 2), center_y - (size / 2)); // Top Left
+    cairo_line_to(cr, center_x + (size / 2),
+                  center_y + (size / 2)); // Bot Right
+    cairo_stroke(cr);
+    break;
+  }
+}
+
 // draws the grid lines and fills the square colors and handles grid
 // transaltion. uses cairo.
 static void draw_grid(GtkDrawingArea *area, cairo_t *cr, int width, int height,

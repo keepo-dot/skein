@@ -332,3 +332,23 @@ void pattern_apply_fill(PatternData *pattern, int col, int row,
   ht->history_count++;
   ht->current_position++;
 }
+
+void pattern_reset_size(PatternData *pattern, int new_width, int new_height) {
+  free(pattern->stitch_data);
+  pattern->stitch_data =
+      calloc((size_t)(new_width * new_height), sizeof(StitchData));
+  pattern->width = new_width;
+  pattern->height = new_height;
+}
+
+bool is_pattern_empty(PatternData *pattern) {
+  int total_cells = pattern->width * pattern->height;
+
+  for (int i = 0; i < total_cells; i++) {
+    if (pattern->stitch_data[i].stitch_type != STITCH_EMPTY ||
+        pattern->stitch_data[i].stitch_color.alpha > 0.0) {
+      return false;
+    }
+  }
+  return true;
+}

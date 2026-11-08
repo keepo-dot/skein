@@ -5,6 +5,7 @@
 <p align="center">
   <a href="https://github.com/keepo-dot/skein/actions"><img src="https://img.shields.io/badge/build-passing-brightgreen.svg?style=flat-square" alt="Build Status"></a>
   <img src="https://img.shields.io/badge/status-active-brightgreen.svg?style=flat-square" alt="Status">
+  <img src="https://img.shields.io/badge/status-refactoring-orange?style=flat-square" alt="Refactoring">
   <img src="https://img.shields.io/github/last-commit/keepo-dot/skein?style=flat-square" alt="Last Commit">
   <a href="https://github.com/keepo-dot/skein/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat-square" alt="License: GPL v3"></a>
 </p>
@@ -23,6 +24,10 @@
   <img src="https://img.shields.io/github/stars/keepo-dot/skein?style=social" alt="Stars">
   <img src="https://img.shields.io/github/forks/keepo-dot/skein?style=social" alt="Forks">
 </p>
+
+> [!WARNING]
+> **Active Refactor in Progress**  
+> The codebase is currently undergoing a structural MVC refactor. Master branch builds and APIs may shift rapidly.
 
 ---
 

@@ -28,7 +28,7 @@ jobs:
 
       - name: Generate Compilation Database & Run Clang-Tidy
         run: |
-          bear -- make clean skein
+          bear -- make clean && make
           # Run clang-tidy on all project C sources
           clang-tidy -p . src/*.c --warnings-as-errors='*'
 

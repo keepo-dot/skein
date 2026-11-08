@@ -76,56 +76,6 @@ gboolean redo_action(GtkWidget *widget, GVariant *args, gpointer app_state) {
   return false;
 }
 
-static void apply_tool_to_cell(AppState *app_state, int index) {
-  ToolbarState *toolbar_state = app_state->ui->toolbar_state;
-  PatternData *pattern = app_state->pattern;
-
-  switch (toolbar_state->active_mode) {
-  case MODE_PAINT: {
-    GdkRGBA initial_color = toolbar_state->active_color;
-
-    if (initial_color.alpha != 0) {
-      pattern->stitch_data[index].stitch_color =
-          TO_PATTERN_COLOR(toolbar_state->active_color);
-
-      if (toolbar_state->active_stitch != STITCH_EMPTY) {
-        pattern->stitch_data[index].stitch_type =
-            app_state->ui->toolbar_state->active_stitch;
-      } else if (pattern->stitch_data[index].stitch_type == STITCH_EMPTY) {
-        pattern->stitch_data[index].stitch_type = STITCH_KNIT;
-      }
-    }
-
-    app_state->ui->redraw = true;
-    break;
-  }
-  case MODE_STITCH:
-    pattern->stitch_data[index].stitch_type = toolbar_state->active_stitch;
-    if (toolbar_state->active_color.alpha != 0.0) {
-      pattern->stitch_data[index].stitch_color =
-          TO_PATTERN_COLOR(toolbar_state->active_color);
-    }
-    app_state->ui->redraw = true;
-    break;
-  case MODE_ERASE:
-    pattern->stitch_data[index].stitch_type = STITCH_EMPTY;
-    pattern->stitch_data[index].stitch_color = TO_PATTERN_COLOR(COLOR_EMPTY);
-    app_state->ui->redraw = true;
-    break;
-  case MODE_PICKER:
-    if (pattern->stitch_data[index].stitch_color.alpha > 0.0) {
-      toolbar_state->active_color =
-          TO_GDK_RGBA(pattern->stitch_data[index].stitch_color);
-    }
-    break;
-  case MODE_FILL:
-    fill_cells(app_state);
-    break;
-  default:
-    break;
-  }
-}
-
 // handles release events.
 void on_drag_end(GtkGestureDrag *gesture, double offset_x, double offset_y,
                  AppState *app_state) {

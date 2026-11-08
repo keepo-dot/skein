@@ -157,8 +157,6 @@ void pattern_apply_stitch_end(PatternData *pattern) {
   }
   ActionGroup *last_group =
       &history_table->group[history_table->current_position - 1];
-  bool should_discard = false;
-
   if (last_group->group_size == 0) {
     history_cleanup_duplicates(history_table);
   } else if (last_group->group_size == 1) {
@@ -185,7 +183,7 @@ void pattern_apply_fill(PatternData *pattern, int col, int row,
   }
   int index = (row * pattern->width) + col;
   // click bounds check, otherwise off grid clicks cause segfaults.
-  if (index < 0 || index > (pattern->width * pattern->height) - 1) {
+  if (col < 0 || col >= pattern->width || row < 0 || row >= pattern->height) {
     return;
   }
   HistoryTable *ht = pattern->history_table;
@@ -211,10 +209,126 @@ void pattern_apply_fill(PatternData *pattern, int col, int row,
   // make sure old memory is cleaned up if user undid things.
   // INFO: Wondering if I can walk the grid, then size the action in the group.
   // Thus not having to size it to the max of the pattern.
+  if (!history_ensure_capacity(ht)) {
+    free(ct);
+    return;
+  }
   history_truncate_future(ht);
+  ActionGroup *agroup = &ht->group[ht->current_position];
   if (ht->group[ht->current_position].group_size == 0) {
-    ActionGroup *agroup = &ht->group[ht->current_position];
     int total_cells = pattern->width * pattern->height;
     agroup->action = calloc(total_cells, sizeof(StitchDelta));
   }
+  int top = 0;
+  ct[top].col = col;
+  ct[top].row = row;
+  top++;
+  agroup->action_type = ACTION_STITCH_EDIT;
+  agroup->action[agroup->group_size].before_state = pattern->stitch_data[index];
+  agroup->action[agroup->group_size].cell_num = index;
+  pattern->stitch_data[index].stitch_color = color;
+  pattern->stitch_data[index].stitch_type = stitch;
+  agroup->action[agroup->group_size].after_state = pattern->stitch_data[index];
+  agroup->group_size++;
+  while (top > 0) {
+    top--;
+    int cur_r = ct[top].row;
+    int cur_c = ct[top].col;
+
+    // North check
+    if (cur_r - 1 >= 0) {
+      int up_idx = ((cur_r - 1) * pattern->width) + cur_c;
+      bool sc = !memcmp(&pattern->stitch_data[up_idx].stitch_color, &cell_color,
+                        sizeof(PatternColor));
+      bool ss = !memcmp(&pattern->stitch_data[up_idx].stitch_type, &cell_stitch,
+                        sizeof(StitchType));
+      if (sc && ss) {
+        agroup->action[agroup->group_size].before_state =
+            pattern->stitch_data[up_idx];
+        agroup->action[agroup->group_size].cell_num = up_idx;
+        pattern->stitch_data[up_idx].stitch_color = color;
+        pattern->stitch_data[up_idx].stitch_type = stitch;
+        agroup->action[agroup->group_size].after_state =
+            pattern->stitch_data[up_idx];
+        agroup->group_size++;
+        ct[top].row = cur_r - 1;
+        ct[top].col = cur_c;
+        top++;
+      }
+    }
+
+    // South check
+    if (cur_r + 1 < pattern->height) {
+      int dn_idx = ((cur_r + 1) * pattern->width) + cur_c;
+      bool sc = !memcmp(&pattern->stitch_data[dn_idx].stitch_color, &cell_color,
+                        sizeof(PatternColor));
+      bool ss = !memcmp(&pattern->stitch_data[dn_idx].stitch_type, &cell_stitch,
+                        sizeof(StitchType));
+      if (sc && ss) {
+        agroup->action[agroup->group_size].before_state =
+            pattern->stitch_data[dn_idx];
+        agroup->action[agroup->group_size].cell_num = dn_idx;
+        pattern->stitch_data[dn_idx].stitch_color = color;
+        pattern->stitch_data[dn_idx].stitch_type = stitch;
+        agroup->action[agroup->group_size].after_state =
+            pattern->stitch_data[dn_idx];
+        agroup->group_size++;
+        ct[top].row = cur_r + 1;
+        ct[top].col = cur_c;
+        top++;
+      }
+    }
+
+    // East check
+    if (cur_c + 1 < pattern->width) {
+      int rt_idx = (cur_r * pattern->width) + (cur_c + 1);
+      bool sc = !memcmp(&pattern->stitch_data[rt_idx].stitch_color, &cell_color,
+                        sizeof(PatternColor));
+      bool ss = !memcmp(&pattern->stitch_data[rt_idx].stitch_type, &cell_stitch,
+                        sizeof(StitchType));
+      if (sc && ss) {
+        agroup->action[agroup->group_size].before_state =
+            pattern->stitch_data[rt_idx];
+        agroup->action[agroup->group_size].cell_num = rt_idx;
+        pattern->stitch_data[rt_idx].stitch_color = color;
+        pattern->stitch_data[rt_idx].stitch_type = stitch;
+        agroup->action[agroup->group_size].after_state =
+            pattern->stitch_data[rt_idx];
+        agroup->group_size++;
+        ct[top].row = cur_r;
+        ct[top].col = cur_c + 1;
+        top++;
+      }
+    }
+
+    // West check
+    if (cur_c - 1 >= 0) {
+      int lt_idx = (cur_r * pattern->width) + (cur_c - 1);
+      bool sc = !memcmp(&pattern->stitch_data[lt_idx].stitch_color, &cell_color,
+                        sizeof(PatternColor));
+      bool ss = !memcmp(&pattern->stitch_data[lt_idx].stitch_type, &cell_stitch,
+                        sizeof(StitchType));
+      if (sc && ss) {
+        agroup->action[agroup->group_size].before_state =
+            pattern->stitch_data[lt_idx];
+        agroup->action[agroup->group_size].cell_num = lt_idx;
+        pattern->stitch_data[lt_idx].stitch_color = color;
+        pattern->stitch_data[lt_idx].stitch_type = stitch;
+        agroup->action[agroup->group_size].after_state =
+            pattern->stitch_data[lt_idx];
+        agroup->group_size++;
+        ct[top].row = cur_r;
+        ct[top].col = cur_c - 1;
+        top++;
+      }
+    }
+  }
+  free(ct);
+  StitchDelta *adj_size =
+      realloc(agroup->action, agroup->group_size * sizeof(StitchDelta));
+  if (adj_size != NULL) {
+    agroup->action = adj_size;
+  }
+  ht->history_count++;
+  ht->current_position++;
 }
